@@ -9,13 +9,12 @@ class Edge():
         self.v1.connect(self.v2)
         self.length = np.linalg.norm(self.v1.position, self.v2.position)
             
-    def set_robot(self, robot):
-        self.robot = robot
+        self.robot_num = 0
     
     def view(self):
-        if self.robot:
-            self.color = 'blue'
+        if self.robot_num > 0:
+            self.color = 'yellow'
         else:
-            self.color = 'red'
+            self.color = 'blue'
         # viewer
     

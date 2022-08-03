@@ -15,6 +15,8 @@ class Vertice():
         self.left = None 
         self.right = None #+
         
+        self.aspect = self.position[2]
+        
     def connect(self, vertice):
         dis = np.linalg.norm(self.position - vertice.position)
         
