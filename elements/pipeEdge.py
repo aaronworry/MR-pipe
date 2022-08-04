@@ -7,7 +7,7 @@ class Edge():
         self.robot = None
         self.color = 'red'
         self.v1.connect(self.v2)
-        self.length = np.linalg.norm(self.v1.position, self.v2.position)
+        self.length = np.linalg.norm(self.v1.position - self.v2.position)
             
         self.robot_num = 0
     

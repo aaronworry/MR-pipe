@@ -18,6 +18,8 @@ Edge0_1 = np.asarray([np.asarray([vertices0[0], vertices1[0]]), np.asarray([vert
 
 pipeDict2 = {'vertices': [vertices0, vertices1], 'verticalEdge': [Edge0_1], 'horizonEdge': [Edge0, Edge1], 'Edge': [Edge0, Edge1, Edge0_1]}
 
+ROBOTS = [np.array([0, -1, 0]), [0, 0, 1, 0, 0, 0], np.array([0, -2, 0]), [0, 0, 0, 1, 0, 0]]
+
 class env():
     def __init__(self, dt, pipeDict, robot_num=2):
         self.robot_num = robot_num
@@ -38,6 +40,7 @@ class env():
         
         self.plot = env_viewer(self)
         self._create_pipe_scenario()
+        self._create_robots(2)
      
     def _create_pipe_scenario(self):
         # 初始化节点对象
@@ -52,11 +55,11 @@ class env():
                 temp2 = item[1]
                 flag1, flag2 = None, None
                 for node in self.nodes:
-                    if node.position is temp1:
+                    if np.array_equal(node.position, temp1):
                         flag1 = node
-                    elif node.position is temp2:
+                    elif np.array_equal(node.position, temp2):
                         flag2 = node
-                    if flag1 and flag2:
+                    if flag1 is not None and flag2 is not None:
                         edge = Edge(flag1, flag2)
                         self.edges.append(edge)
                         break
@@ -66,7 +69,7 @@ class env():
     def _create_robots(self, robot_num):
         # 初始化机器人
         for i in range(robot_num):
-            robot = Robot()
+            robot = Robot(self, ROBOTS[2*i], ROBOTS[2*i+1])
             self.robots.append(robot)  
         # 可视化机器人
     

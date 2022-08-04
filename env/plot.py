@@ -25,9 +25,9 @@ class env_viewer():
         self.color_list = ['g', 'b', 'r', 'c', 'm', 'y', 'k', 'w']
         
         self.robots = env.robots
-        self.pipeVertices = env.vertices
-        self.pipeEdges = env.Pipe
-        
+        self.pipeVertices = env.vertices   #nodes
+        self.pipeEdges = env.horizonPipe # edges
+        self.edges = env.edges
         self.nodes = env.nodes
         
     def init_viewer(self):
@@ -41,7 +41,7 @@ class env_viewer():
         self.show()
     
     def draw_pipe(self):
-        self.drawPipeEdges(self.pipeEdges)
+        self.drawPipeEdges(self.edges)
         self.drawPipeVertices(self.nodes)
         
     def update(self):
@@ -73,29 +73,30 @@ class env_viewer():
         
     def drawPipeEdges(self, edges):
         for aspect_edge in edges:
-            self.drawPipeEdge_aspect(aspect_edge)
+            self.drawPipeEdge(aspect_edge)
         
     def drawPipeVertices(self, vertices):
-        # for aspect_vertice in vertices:
-        self.drawPipeVertice_aspect(vertices) 
+        for vertice in vertices:
+            self.drawPipeVertice(vertice)
         
     def drawRobots(self, robots):
         for robot in robots:
             self.drawRobot(robot)
-        
-    def drawPipeEdge_aspect(self, edges):
-        for item in edges:
-            layer_item = item[0][2]
-            self.line_plot(self.axes[layer_item], item, markersize=2, color="k")
+            
+    def drawPipeEdge(self, edge):
+        layer_item1 = edge.v1.position[2]
+        layer_item2 = edge.v2.position[2]
+        if layer_item1 == layer_item2:
+            self.line_plot2(self.axes[layer_item1], edge, markersize=2, color="k")
+            # self.axes[layer_item1].plot([edge.v1.position[0], edge.v2.position[0]], [edge.v1.position[1], edge.v2.position[1]], marker='o', markersize=2, color='black')
             
         
-    def drawPipeVertice_aspect(self, vertices):
-        for item in vertices:
-            layer_item = item.position[2]
-            if item.neighbor[4] > 0 or item.neighbor[5] > 0:
-                self.point_plot(self.axes[layer_item], item.position, markersize=2, color="green")
-            else:
-                self.point_plot(self.axes[layer_item], item.position, markersize=2, color="black")
+    def drawPipeVertice(self, item):
+        layer_item = item.position[2]
+        if item.neighbor[4] > 0 or item.neighbor[5] > 0:
+            self.point_plot(self.axes[layer_item], item.position, markersize=4, color="red")
+        else:
+            self.point_plot(self.axes[layer_item], item.position, markersize=2, color="black")
             
         
     def drawRobot(self, robot):
@@ -124,5 +125,9 @@ class env_viewer():
     def line_plot(self, ax, line, markersize=2, color="black"):
         # pipe  line  (2, 3)
         ax.plot([line[0][0], line[1][0]], [line[0][1], line[1][1]], marker='o', markersize=markersize, color=color)
+        
+    def line_plot2(self, ax, edge, markersize=2, color="black"):
+        # pipe  edge
+        ax.plot([edge.v1.position[0], edge.v2.position[0]], [edge.v1.position[1], edge.v2.position[1]], marker='o', markersize=markersize, color=color)
         
         
