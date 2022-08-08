@@ -23,6 +23,7 @@ class env_viewer():
         self.fig, self.axes = plt.subplots(nrows = 1, ncols = self.layer_num)
         
         self.color_list = ['g', 'b', 'r', 'c', 'm', 'y', 'k', 'w']
+        self.robot_plot_list = []
         
         self.robots = env.robots
         self.pipeVertices = env.vertices   #nodes
@@ -59,6 +60,7 @@ class env_viewer():
         '''
         for robot_plot in self.robot_plot_list:
             robot_plot.remove()
+        self.robot_plot_list = []
 
 
     
@@ -100,7 +102,26 @@ class env_viewer():
             
         
     def drawRobot(self, robot):
-        pass
+        robot_circle = mpl.patches.Circle(xy=(x, y), radius = robot.radius, color = robot_color)
+        robot_circle.set_zorder(2)
+        #decide which ax it would be drawn. if the robot is in vertical pipe, it would be drawn in the ax where the vertice in front of the robot.
+        self.ax.add_patch(robot_circle)
+        self.robot_plot_list.append(robot_circle)
+        # 6 ori
+        arrow = None
+        # 朝上:点
+        if robot.orientation == :
+            arrow = mpl.patches.Arrow(x, y, 0.5*cos(theta), 0.5*sin(theta), width = 0.6)
+            
+        # 朝下:×
+        elif 
+        # 其他朝向:箭头
+        elif
+        
+        arrow.set_zorder(1)
+        self.ax.add_patch(arrow)
+        self.robot_plot_list.append(arrow)
+        
         
     def point_plot(self, ax, point, markersize=2, color="black"):
         # pipe vertice
@@ -111,9 +132,9 @@ class env_viewer():
     
     def point_arrow_plot(self, ax, point, length=0.5, width=0.3, color='red'):
         # robot
-        px = point[0, 0]
-        py = point[1, 0]
-        theta = point[2, 0]
+        px = point[0]
+        py = point[1]
+        theta = point[2]
 
         pdx = length * cos(theta)
         pdy = length * sin(theta)

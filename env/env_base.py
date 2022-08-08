@@ -81,6 +81,7 @@ class env():
     def step(self):
         for robot in self.robots:
             robot.step()
+        self.render()
         
     def viewer(self):
         pass
