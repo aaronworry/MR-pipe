@@ -25,7 +25,7 @@ class Robot():
         self.reset()
         
     def reset(self):
-        pass
+        self.view()
         
     def move(self, velocity):
         self.afterDis = velocity * self.env.dt - self.distance_next_vertice
@@ -64,4 +64,3 @@ class Robot():
     
     def view(self):
         self.color = 'green'
-        pass

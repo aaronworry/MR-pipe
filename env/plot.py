@@ -102,23 +102,30 @@ class env_viewer():
             
         
     def drawRobot(self, robot):
-        robot_circle = mpl.patches.Circle(xy=(x, y), radius = robot.radius, color = robot_color)
-        robot_circle.set_zorder(2)
+        robot_circle = mpl.patches.Circle(xy=(x, y), radius = robot.radius, color = robot.color)
+        robot_circle.set_zorder(1)
         #decide which ax it would be drawn. if the robot is in vertical pipe, it would be drawn in the ax where the vertice in front of the robot.
         self.ax.add_patch(robot_circle)
         self.robot_plot_list.append(robot_circle)
         # 6 ori
-        arrow = None
-        # 朝上:点
-        if robot.orientation == :
-            arrow = mpl.patches.Arrow(x, y, 0.5*cos(theta), 0.5*sin(theta), width = 0.6)
-            
-        # 朝下:×
-        elif 
-        # 其他朝向:箭头
-        elif
+        arrow = mpl.patches.Circle(xy=(x, y), radius = 0.1, color = robot.color)
+        # up: yellow
+        if robot.orientation[4] == 1:
+            arrow = mpl.patches.Circle(xy=(x, y), radius = 0.1, color = 'yellow')
+        # down: purple
+        elif robot.orientation[5] == 1:
+            arrow = mpl.patches.Circle(xy=(x, y), radius = 0.1, color = 'darkviolet')
+        # other ori: arrow
+        elif robot.orientation[0] == 1:
+            arrow = mpl.patches.Arrow(x, y, 0.2, 0, width = 0.1, color = robot.color)
+        elif robot.orientation[1] == 1:
+            arrow = mpl.patches.Arrow(x, y, -0.2, 0, width = 0.1, color = robot.color)
+        elif robot.orientation[2] == 1:
+            arrow = mpl.patches.Arrow(x, y, 0, 0.2, width = 0.1, color = robot.color)
+        elif robot.orientation[3] == 1:
+            arrow = mpl.patches.Arrow(x, y, 0, -0.2, width = 0.1, color = robot.color)
         
-        arrow.set_zorder(1)
+        arrow.set_zorder(2)
         self.ax.add_patch(arrow)
         self.robot_plot_list.append(arrow)
         
