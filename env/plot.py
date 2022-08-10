@@ -172,4 +172,54 @@ class env_viewer():
         # pipe  edge
         ax.plot([edge.v1.position[0], edge.v2.position[0]], [edge.v1.position[1], edge.v2.position[1]], marker='o', markersize=markersize, color=color)
         
-        
+    # animation method 1
+    def animate(self):
+
+        self.draw_robot_diff_list()
+
+        return self.ax.patches + self.ax.texts + self.ax.artists
+
+    def show_ani(self):
+        ani = animation.FuncAnimation(
+        self.fig, self.animate, init_func=self.init_plot, interval=100, blit=True, frames=100, save_count=100)
+        plt.show()
+    
+    def save_ani(self, name='animation'): 
+        ani = animation.FuncAnimation(
+        self.fig, self.animate, init_func=self.init_plot, interval=1, blit=False, save_count=300)
+        ani.save(name+'.gif', writer='pillow')
+
+    # # animation method 2
+    def save_gif_figure(self, path, i, format='png'):
+
+        if path.exists():
+            order = str(i).zfill(3)
+            plt.savefig(str(path)+'/'+order+'.'+format, format=format)
+        else:
+            path.mkdir()
+            order = str(i).zfill(3)
+            plt.savefig(str(path)+'/'+order+'.'+format, format=format)
+
+    def create_animate(self, image_path, ani_path, ani_name='animated', keep_len=30, rm_fig_path=True):
+
+        if not ani_path.exists():
+            ani_path.mkdir()
+
+        images = list(image_path.glob('*.png'))
+        images.sort()
+        image_list = []
+        for i, file_name in enumerate(images):
+
+            if i == 0:
+                continue
+
+            image_list.append(imageio.imread(file_name))
+            if i == len(images) - 1:
+                for j in range(keep_len):
+                    image_list.append(imageio.imread(file_name))
+
+        imageio.mimsave(str(ani_path)+'/'+ ani_name+'.gif', image_list)
+        print('Create animation successfully')
+
+        if rm_fig_path:
+            shutil.rmtree(image_path)    

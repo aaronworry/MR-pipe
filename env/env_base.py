@@ -93,13 +93,33 @@ class env():
         self.time += dt
     
     """
-    def show(self):
-        self.plot.drawRobots(self.robots)
+    def save_fig(self, path, i):
+        self.plot.save_gif_figure(path, i)
+    
+    def save_ani(self, image_path, ani_path, ani_name='animated', **kwargs):
+        self.plot.create_animate(image_path, ani_path, ani_name=ani_name, **kwargs)
+
+    def show(self, **kwargs):
+        self.plot.draw_dyna_components(**kwargs)
         self.plot.show()
+    
+    def show_ani(self):
+        self.plot.show_ani()
     """
         
         
 if __name__ == '__main__':
     env = env(dt = 2, pipeDict = pipeDict2)
+    '''
+    for i in range(300):
+
+        des_vel = env.car.cal_des_vel()
+        env.car.move_forward(des_vel)
+
+        env.render()
+    
+
+    env.show()
+    '''
     
     
