@@ -39,7 +39,7 @@ class env_viewer():
             ax.set_xlabel("x [m]")
             ax.set_ylabel("y [m]")
         self.draw_pipe()
-        self.show()
+        
     
     def draw_pipe(self):
         self.drawPipeEdges(self.edges)
@@ -50,7 +50,7 @@ class env_viewer():
     
     def com_cla(self):
         # self.ax.patches = []
-        self.ax.texts.clear()
+        # self.ax.texts.clear()
         '''
         for pipeEdge_plot in self.pipeEdge_plot_list:
             pipeEdge_plot.remove()
@@ -96,46 +96,60 @@ class env_viewer():
     def drawPipeVertice(self, item):
         layer_item = item.position[2]
         if item.neighbor[4] > 0 or item.neighbor[5] > 0:
-            self.point_plot(self.axes[layer_item], item.position, markersize=4, color="red")
+            self.point_plot(self.axes[layer_item], item.position, radius=0.1, color="red")
         else:
-            self.point_plot(self.axes[layer_item], item.position, markersize=2, color="black")
+            self.point_plot(self.axes[layer_item], item.position, radius=0.08, color="black")
             
         
     def drawRobot(self, robot):
-        robot_circle = mpl.patches.Circle(xy=(x, y), radius = robot.radius, color = robot.color)
-        robot_circle.set_zorder(1)
+        robot_circle = mpl.patches.Circle(xy=(robot.position[0], robot.position[1]), radius = 0.15, color = robot.color)
+        robot_circle.set_zorder(2)
         #decide which ax it would be drawn. if the robot is in vertical pipe, it would be drawn in the ax where the vertice in front of the robot.
-        self.ax.add_patch(robot_circle)
+        temp = robot.position[2]
+        layer_item = 0
+        if temp == 0 or temp == 1:
+            layer_item = temp
+        else:
+            if robot.orientation[4] == 1:
+                layer_item = 1
+            elif robot.orientation[5] == 1:
+                layer_item = 0
+        
+        self.axes[layer_item].add_patch(robot_circle)
         self.robot_plot_list.append(robot_circle)
         # 6 ori
-        arrow = mpl.patches.Circle(xy=(x, y), radius = 0.1, color = robot.color)
+        arrow = mpl.patches.Circle(xy=(robot.position[0], robot.position[1]), radius = 0.1, color = robot.color)
         # up: yellow
         if robot.orientation[4] == 1:
-            arrow = mpl.patches.Circle(xy=(x, y), radius = 0.1, color = 'yellow')
+            arrow = mpl.patches.Circle(xy=(robot.position[0], robot.position[1]), radius = 0.1, color = 'yellow')
         # down: purple
         elif robot.orientation[5] == 1:
-            arrow = mpl.patches.Circle(xy=(x, y), radius = 0.1, color = 'darkviolet')
+            arrow = mpl.patches.Circle(xy=(robot.position[0], robot.position[1]), radius = 0.1, color = 'darkviolet')
         # other ori: arrow
         elif robot.orientation[0] == 1:
-            arrow = mpl.patches.Arrow(x, y, 0.2, 0, width = 0.1, color = robot.color)
+            arrow = mpl.patches.Arrow(robot.position[0], robot.position[1], 0.3, 0, width = 0.1, color = robot.color)
         elif robot.orientation[1] == 1:
-            arrow = mpl.patches.Arrow(x, y, -0.2, 0, width = 0.1, color = robot.color)
+            arrow = mpl.patches.Arrow(robot.position[0], robot.position[1], -0.3, 0, width = 0.1, color = robot.color)
         elif robot.orientation[2] == 1:
-            arrow = mpl.patches.Arrow(x, y, 0, 0.2, width = 0.1, color = robot.color)
+            arrow = mpl.patches.Arrow(robot.position[0], robot.position[1], 0, 0.3, width = 0.1, color = robot.color)
         elif robot.orientation[3] == 1:
-            arrow = mpl.patches.Arrow(x, y, 0, -0.2, width = 0.1, color = robot.color)
+            arrow = mpl.patches.Arrow(robot.position[0], robot.position[1], 0, -0.3, width = 0.1, color = robot.color)
         
-        arrow.set_zorder(2)
-        self.ax.add_patch(arrow)
+        arrow.set_zorder(3)
+        self.axes[layer_item].add_patch(arrow)
         self.robot_plot_list.append(arrow)
         
         
-    def point_plot(self, ax, point, markersize=2, color="black"):
+    def point_plot(self, ax, point, radius, color="black"):
         # pipe vertice
         x = point[0]
-        y = point[1]           
+        y = point[1]     
+
+        vertice_circle = mpl.patches.Circle(xy=(x, y), radius = radius, color = color)
+        vertice_circle.set_zorder(1)
+        ax.add_patch(vertice_circle)
     
-        ax.plot([x], [y], marker='o', markersize=markersize, color=color)
+        # ax.plot([x], [y], marker='o', markersize=markersize, color=color)
     
     def point_arrow_plot(self, ax, point, length=0.5, width=0.3, color='red'):
         # robot

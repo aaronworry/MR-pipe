@@ -72,6 +72,8 @@ class env():
             robot = Robot(self, ROBOTS[2*i], ROBOTS[2*i+1])
             self.robots.append(robot)  
         # 可视化机器人
+        self.plot.drawRobots(self.robots)
+        self.plot.show()
     
         
     def reset(self):
@@ -83,18 +85,18 @@ class env():
             robot.step()
         self.render()
         
-    def viewer(self):
-        pass
         
     def render(self, dt):
         self.plot.com_cla()
         self.plot.drawRobots(self.robots)
         self.plot.pause(dt)
         self.time += dt
-        
+    
+    """
     def show(self):
         self.plot.drawRobots(self.robots)
         self.plot.show()
+    """
         
         
 if __name__ == '__main__':

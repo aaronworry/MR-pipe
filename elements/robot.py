@@ -5,8 +5,8 @@ class Robot():
         self.init_orientation = ori # [0, 0, 0, 0, 0, 0]
         self.init_position = init_position
         self.velocity = 0
-        self.orientation = None
-        self.position = None
+        self.orientation = ori
+        self.position = init_position
         
         self.turnFlag = False
         self.nextOri = None # next heading after turn, when velocity is larger than 0
