@@ -5,7 +5,7 @@ class Edge():
         self.v1 = vertice1
         self.v2 = vertice2
         self.robot = None
-        self.color = 'red'
+        self.color = 'black'
         self.v1.connect(self.v2)
         self.length = np.linalg.norm(self.v1.position - self.v2.position)
             

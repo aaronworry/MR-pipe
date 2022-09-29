@@ -20,7 +20,7 @@ pipeDict2 = {'vertices': [vertices0, vertices1], 'verticalEdge': [Edge0_1], 'hor
 
 ROBOTS = [np.array([0, -1, 0]), [0, 0, 1, 0, 0, 0], np.array([0, -2, 0]), [0, 0, 0, 1, 0, 0]]
 
-class env():
+class Env():
     def __init__(self, dt, pipeDict, robot_num=2):
         self.robot_num = robot_num
         self.robots = []
@@ -75,7 +75,16 @@ class env():
         self.plot.drawRobots(self.robots)
         self.plot.show()
     
-        
+    def upgrade_edges(self, edges, color):
+        # 为规划的路径标注颜色
+        for item in edges:
+            for k in self.edges:
+                if np.array_equal(k.v1.position, item[0]) and np.array_equal(k.v2.position, item[1]):
+                    k.color = color
+                elif np.array_equal(k.v1.position, item[1]) and np.array_equal(k.v2.position, item[0]):
+                    k.color = color
+    
+    
     def reset(self):
         for robot in self.robots:
             robot.reset()
@@ -109,7 +118,7 @@ class env():
         
         
 if __name__ == '__main__':
-    env = env(dt = 2, pipeDict = pipeDict2)
+    env = Env(dt = 2, pipeDict = pipeDict2)
     '''
     for i in range(300):
 

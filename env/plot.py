@@ -24,6 +24,7 @@ class env_viewer():
         
         self.color_list = ['g', 'b', 'r', 'c', 'm', 'y', 'k', 'w']
         self.robot_plot_list = []
+        self.pipeEdge_plot_list = []
         
         self.robots = env.robots
         self.pipeVertices = env.vertices   #nodes
@@ -44,6 +45,12 @@ class env_viewer():
     def draw_pipe(self):
         self.drawPipeEdges(self.edges)
         self.drawPipeVertices(self.nodes)
+        
+    def upgrade_pipe_path(self):
+        for pipeEdge_plot in self.pipeEdge_plot_list:
+            pipeEdge_plot.remove()
+        self.pipeEdge_plot_list = []
+        self.drawPipeEdges(self.edges)
         
     def update(self):
         pass
@@ -89,7 +96,8 @@ class env_viewer():
         layer_item1 = edge.v1.position[2]
         layer_item2 = edge.v2.position[2]
         if layer_item1 == layer_item2:
-            self.line_plot2(self.axes[layer_item1], edge, markersize=2, color="k")
+            # self.line_plot2(self.axes[layer_item1], edge, markersize=2, color=edge.color)
+            self.line_plot(self.axes[layer_item1], edge, markersize=2, color=edge.color)
             # self.axes[layer_item1].plot([edge.v1.position[0], edge.v2.position[0]], [edge.v1.position[1], edge.v2.position[1]], marker='o', markersize=2, color='black')
             
         
@@ -164,9 +172,11 @@ class env_viewer():
 
         ax.add_patch(point_arrow)
     
-    def line_plot(self, ax, line, markersize=2, color="black"):
+    def line_plot(self, ax, edge, markersize=2, color="black"):
         # pipe  line  (2, 3)
-        ax.plot([line[0][0], line[1][0]], [line[0][1], line[1][1]], marker='o', markersize=markersize, color=color)
+        line = mpl.lines.Line2D([edge.v1.position[0], edge.v2.position[0]], [edge.v1.position[1], edge.v2.position[1]], marker='o', markersize=markersize, color=color)
+        ax.add_line(line)
+        self.pipeEdge_plot_list.append(line)
         
     def line_plot2(self, ax, edge, markersize=2, color="black"):
         # pipe  edge
