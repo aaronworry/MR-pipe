@@ -20,6 +20,8 @@ class Robot():
         self.distance_next_vertice = 0        
         self.next_vertice = None
         self.path = None
+        
+        self.passed_edge_num = 0
 
         self.color = None
         
@@ -34,26 +36,49 @@ class Robot():
     def move(self, velocity):
         self.afterDis = velocity * self.env.dt - self.distance_next_vertice
         self.backDis = self.distance_last_vertice + velocity * self.env.dt
+        self.velocity = velocity
         if self.afterDis > 0:
             self.turnFlag = True
-            self.turn()
+            self.turn(self.afterDis)
+            self.passed_edge_num += 1
         elif self.backDis < 0:
             self.turnBack() # 后退转向
         else:
-            self.position = None
+            self.position = self.update_position(self.position, velocity * self.env.dt)
             self.distance_last_vertice += velocity * self.env.dt
             self.distance_next_vertice -= velocity * self.env.dt        
+    
+    def update_position(self, position, move_dis):
+        temp = position.copy()
+        if self.orientation[0] == 1:
+            temp[0] += move_dis
+        elif self.orientation[1] == 1:
+            temp[0] -= move_dis
+        elif self.orientation[2] == 1:
+            temp[1] += move_dis
+        elif self.orientation[3] == 1:
+            temp[1] -= move_dis
+        elif self.orientation[4] == 1:
+            temp[2] += move_dis
+        elif self.orientation[5] == 1:
+            temp[2] -= move_dis
+        return temp
             
-            
-    def turn(self):
+    def turn(self, distance):
         # data in self.next_vertice.neighbor could be choosen to turn
         self.orientation = self.nextOri
-        self.position = None
-        
         self.last_vertice = self.next_vertice
-        self.distance_last_vertice = self.afterDis 
-        self.distance_next_vertice = None               
-        self.next_vertice = None
+        self.position = self.update_position(self.last_vertice.position, distance)
+        self.distance_last_vertice = distance         
+        
+        # 计算方式不合理，应该用机器人所在的Edge的信息计算
+        self.edge = None
+        self.distance_next_vertice = np.linalg.norm(self.path[self.passed_edge_num + 1][0] - self.path[self.passed_edge_num + 1][1]) - self.distance_last_vertice
+        next_vertice_position = self.path[self.passed_edge_num + 1][1]
+        for item in self.env.nodes:
+            if np.array_equal(next_vertice_position, item.position):
+                self.next_vertice = item
+                break
     
     def turnBack(self):
         pass
@@ -62,8 +87,23 @@ class Robot():
         pass
     
     def action(self):
-        
-        return velocity, nextOri
+        velocity = 0.2
+        next_edge_pos1, next_edge_pos2 = self.path[self.passed_edge_num + 1][0], self.path[self.passed_edge_num + 1][1]
+        nextOri = []
+        if next_edge_pos2[0] - next_edge_pos1[0] > 0:
+            nextOri = [1, 0, 0, 0, 0, 0]
+        if next_edge_pos2[0] - next_edge_pos1[0] < 0:
+            nextOri = [0, 1, 0, 0, 0, 0]
+        if next_edge_pos2[1] - next_edge_pos1[1] > 0:
+            nextOri = [0, 0, 1, 0, 0, 0]    
+        if next_edge_pos2[1] - next_edge_pos1[1] < 0:
+            nextOri = [1, 0, 0, 1, 0, 0]
+        if next_edge_pos2[2] - next_edge_pos1[2] > 0:
+            nextOri = [0, 0, 0, 0, 1, 0]
+        if next_edge_pos2[2] - next_edge_pos1[2] < 0:
+            nextOri = [0, 0, 0, 0, 0, 1]
+        self.nextOri = nextOri    
+        return velocity
     
     
     def view(self):
