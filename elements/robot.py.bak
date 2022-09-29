@@ -19,7 +19,6 @@ class Robot():
         self.distance_last_vertice = 0
         self.distance_next_vertice = 0        
         self.next_vertice = None
-        self.path = None
 
         self.color = None
         
@@ -27,9 +26,6 @@ class Robot():
         
     def reset(self):
         self.view()
-        
-    def assign_path(self, path):
-        self.path = path
         
     def move(self, velocity):
         self.afterDis = velocity * self.env.dt - self.distance_next_vertice

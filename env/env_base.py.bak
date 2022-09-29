@@ -132,11 +132,8 @@ class Env():
 if __name__ == '__main__':
     env = Env(dt = 2, pipeDict = pipeDict2)
     
-    # 规划路径
-    # paths = 
-    # env.path_planning(paths)
-    
-    # 机器人运动
+    # 规划路径 
+    env.plot.pause(2)
     for i in range(10):
         env.render(0.2, i)
     '''

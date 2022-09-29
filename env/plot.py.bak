@@ -78,9 +78,9 @@ class env_viewer():
         plt.pause(time)
         
     def show(self):
-        # plt.show()
+        plt.show()
         # self.fig.canvas.draw()
-        plt.draw()
+        # plt.draw()
         
     def drawPipeEdges(self, edges):
         for aspect_edge in edges:
