@@ -3,23 +3,26 @@ import random
 import numpy as np
 
 class WeightGraph():
-    def __init__(self):
+    def __init__(self, env_vertices, env_edges):
         self.graph = None
         self.__r_edges = []
         self.__is1degree = False
         self.__degree1 = []     # 度为1的顶点
         self.node = 0
+        self.env_vertices = env_vertices
+        self.env_edges = env_edges
+        self.generate_graph()
 
-    def generate_graph(self, env_vertices, env_edges):
+    def generate_graph(self):
         self.graph = Graph()
-        temp = len(env_vertices)
+        temp = len(self.env_vertices)
         number_of_vertex = 0
         for i in range(temp):
-            number_of_vertex += np.shape(env_vertices[i])[0]
+            number_of_vertex += np.shape(self.env_vertices[i])[0]
         number_of_edges = 0
-        temp = len(env_edges)
+        temp = len(self.env_edges)
         for i in range(temp):
-            number_of_edges += np.shape(env_edges[i])[0]
+            number_of_edges += np.shape(self.env_edges[i])[0]
             
         self.graph.add_vertices(number_of_vertex)
         self.node = number_of_vertex
@@ -29,15 +32,15 @@ class WeightGraph():
         acc = 0
         for i in range(number_of_vertex):
             self.graph.vs[i]["id"] = i
-            number = np.shape(env_vertices[aspect])[0]
+            number = np.shape(self.env_vertices[aspect])[0]
             if i >= acc + number: 
                 acc += number
                 aspect += 1
-            self.graph.vs[i]["position"] = env_vertices[aspect][i - acc]
+            self.graph.vs[i]["position"] = self.env_vertices[aspect][i - acc]
             
         edges = []
         weights = []
-        for item in env_edges:
+        for item in self.env_edges:
             for tu in item:    # 4
                 position1, position2 = tu[0], tu[1]   # （3, ）np.ndarray 
                 flag1, flag2 = None, None
@@ -89,6 +92,27 @@ class WeightGraph():
         if temp_val in edges:
             return True
         return False
+
+    def generate_position_of_path(self, walks):
+        position_paths = []
+        for item in walks:
+            # item['path'] = []
+            edge_list = []
+            temp = item['path']
+            for i in range(len(temp)-1):
+                id1, id2 = temp[i], temp[i+1]            
+                pos1, pos2 = None, None
+                for j in range(self.node):
+                    if self.graph.vs[j]['id'] == id1:
+                        pos1 = self.graph.vs[j]['position']
+                    elif self.graph.vs[j]['id'] == id2:
+                        pos2 = self.graph.vs[j]['position']
+                    if pos1 is not None and pos2 is not None:
+                        edge = [pos1, pos2]
+                        edge_list.append(edge)
+                        break
+            position_paths.append(edge_list)        
+        return position_paths
 
     def get_edges(self):
         return self.graph.get_edgelist()

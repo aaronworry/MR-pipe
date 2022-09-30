@@ -148,7 +148,6 @@ if __name__ == '__main__':
     
     env.upgrade_edges(result[0], 'blue')
     env.upgrade_edges(result[1], 'green')
-    env.path_planning(1)
     
     # 机器人运动
     for i in range(10):
