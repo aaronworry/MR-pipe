@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from elements.robot import Robot
 from elements.pipeVertices import Vertice
 from elements.pipeEdge import Edge
-from plot import env_viewer
+from view.plot import env_viewer
 
 vertices0 = np.array([[0, 0, 0], [0, -1, 0], [0, -2, 0], [0, -3, 0], [1, 0, 0], [1, -3, 0], [3, 0, 0], [3, -3, 0]])
 vertices1 = np.array([[0, 0, 1], [0, -1, 1], [0, -2, 1], [0, -3, 1], [1, 0, 1], [1, -1, 1], [1, -2, 1], [1, -3, 1]])
