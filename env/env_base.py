@@ -27,6 +27,7 @@ class Env():
     def __init__(self, dt, pipeDict, robot_num=2):
         self.robot_num = robot_num
         self.robots = []
+        self.dt = dt
         self.vertices = pipeDict['vertices']
         self.verticalPipe = pipeDict['verticalEdge']
         self.horizonPipe = pipeDict['horizonEdge']
@@ -39,6 +40,8 @@ class Env():
         self.layer_num = 2
         
         self.time = 0
+        
+        self.color = ['green', 'blue', 'cyan', 'purple', 'yellow']
         
         self.nodes = []
         self.edges = []
@@ -77,6 +80,7 @@ class Env():
         # 初始化机器人
         for i in range(robot_num):
             robot = Robot(self, ROBOTS[2*i], ROBOTS[2*i+1])
+            robot.color = self.color[(i+1)%len(self.color)]
             self.robots.append(robot)  
         # 可视化机器人
         self.plot.drawRobots(self.robots)
@@ -84,9 +88,14 @@ class Env():
 
     def path_planning(self, paths):
         # task_allocation   为机器人分配路径, 并更新颜色
-        
+        for path in paths:
+            for robot in self.robots:
+                if np.array_equal(robot.position, path[0][0]) and robot.allocated == False:
+                    self.upgrade_edges(path, robot.color)
+                    robot.assign_path(path)
+                    robot.allocated = True
+                
         self.plot.upgrade_pipe_path()
-        pass
     
     def upgrade_edges(self, edges, color):
         # 为规划的路径标注颜色
@@ -108,14 +117,13 @@ class Env():
         self.render()
         
         
-    def render(self, dt, k):
+    def render(self):
         
         self.plot.com_cla()  
-        if k % 2 == 1:
-            self.plot.drawRobots(self.robots)
+        self.plot.drawRobots(self.robots)
         self.plot.show()
-        self.plot.pause(dt)
-        self.time += dt
+        self.plot.pause(self.dt)
+        self.time += self.dt
     
     """
     def save_fig(self, path, i):
@@ -144,15 +152,15 @@ if __name__ == '__main__':
     alg.calculate_avaliable_solution()
     walks = alg.find_optimize_solution()
     result = env.graph.generate_position_of_path(walks)
-    print(result)
+    # print(result)
     
-    env.upgrade_edges(result[0], 'blue')
-    env.upgrade_edges(result[1], 'green')
-    env.path_planning(1)
+    # env.upgrade_edges(result[0], 'blue')
+    # env.upgrade_edges(result[1], 'green')
+    env.path_planning(result)
     
     # 机器人运动
     for i in range(10):
-        env.render(0.2, i)
+        env.render()
     '''
     for i in range(300):
 

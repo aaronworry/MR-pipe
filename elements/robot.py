@@ -24,15 +24,21 @@ class Robot():
         self.passed_edge_num = 0
 
         self.color = None
+        self.allocated = False
         
         self.reset()
         
     def reset(self):
+        self.allocated = False
         self.view()
         
     def assign_path(self, path):
         self.path = path
-        
+    
+    def step(self):
+        pass
+
+    
     def move(self, velocity):
         self.afterDis = velocity * self.env.dt - self.distance_next_vertice
         self.backDis = self.distance_last_vertice + velocity * self.env.dt
