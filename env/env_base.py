@@ -12,8 +12,8 @@ from view.plot import env_viewer
 from algorithm.weightGraph import WeightGraph
 from algorithm.simpleAlgorithm import MySimpleAlgorithm
 
-vertices0 = np.array([[0, 0, 0], [0, -1, 0], [0, -2, 0], [0, -3, 0], [1, 0, 0], [1, -3, 0], [3, 0, 0], [3, -3, 0]])
-vertices1 = np.array([[0, 0, 1], [0, -1, 1], [0, -2, 1], [0, -3, 1], [1, 0, 1], [1, -1, 1], [1, -2, 1], [1, -3, 1]])
+vertices0 = np.array([[0., 0., 0.], [0., -1., 0.], [0., -2., 0.], [0., -3., 0.], [1., 0., 0.], [1., -3., 0.], [3., 0., 0.], [3., -3., 0.]])
+vertices1 = np.array([[0., 0., 1.], [0., -1., 1.], [0., -2., 1.], [0., -3., 1.], [1., 0., 1.], [1., -1., 1.], [1., -2., 1.], [1., -3., 1.]])
     
 Edge0 = np.asarray([np.asarray([vertices0[0], vertices0[1]]), np.asarray([vertices0[2], vertices0[3]]), np.asarray([vertices0[4], vertices0[6]]), np.asarray([vertices0[5], vertices0[7]])])
 Edge1 = np.asarray([np.asarray([vertices1[0], vertices1[1]]), np.asarray([vertices1[1], vertices1[2]]), np.asarray([vertices1[2], vertices1[3]]), np.asarray([vertices1[4], vertices1[5]]), np.asarray([vertices1[5], vertices1[6]]), np.asarray([vertices1[6], vertices1[7]]), np.asarray([vertices1[1], vertices1[5]]), np.asarray([vertices1[2], vertices1[6]])])
@@ -21,13 +21,14 @@ Edge0_1 = np.asarray([np.asarray([vertices0[0], vertices1[0]]), np.asarray([vert
 
 pipeDict2 = {'vertices': [vertices0, vertices1], 'verticalEdge': [Edge0_1], 'horizonEdge': [Edge0, Edge1], 'Edge': [Edge0, Edge1, Edge0_1]}
 
-ROBOTS = [np.array([0, -1, 0]), [0, 0, 1, 0, 0, 0], np.array([0, -2, 0]), [0, 0, 0, 1, 0, 0]]
+ROBOTS = [np.array([0., -1., 0.]), [0, 0, 1, 0, 0, 0], np.array([0., -2., 0.]), [0, 0, 0, 1, 0, 0]]
 
 class Env():
     def __init__(self, dt, pipeDict, robot_num=2):
         self.robot_num = robot_num
         self.robots = []
         self.dt = dt
+        self.reward = 0
         self.vertices = pipeDict['vertices']
         self.verticalPipe = pipeDict['verticalEdge']
         self.horizonPipe = pipeDict['horizonEdge']
@@ -40,7 +41,8 @@ class Env():
         self.layer_num = 2
         
         self.time = 0
-        
+        self.done = False
+        self.robot_finihsed_set = set()
         self.color = ['green', 'blue', 'cyan', 'purple', 'yellow']
         
         self.nodes = []
@@ -79,7 +81,7 @@ class Env():
     def _create_robots(self, robot_num):
         # 初始化机器人
         for i in range(robot_num):
-            robot = Robot(self, ROBOTS[2*i], ROBOTS[2*i+1])
+            robot = Robot(self, i, ROBOTS[2*i], ROBOTS[2*i+1])
             robot.color = self.color[(i+1)%len(self.color)]
             self.robots.append(robot)  
         # 可视化机器人
@@ -110,10 +112,12 @@ class Env():
     def reset(self):
         for robot in self.robots:
             robot.reset()
+        self.robot_finihsed_set = set()
         
     def step(self):
         for robot in self.robots:
             robot.step()
+            self.reward += robot.reward
         self.render()
         
         
@@ -142,12 +146,12 @@ class Env():
         
         
 if __name__ == '__main__':
-    env = Env(dt = 2, pipeDict = pipeDict2)
+    env = Env(dt = 0.8, pipeDict = pipeDict2)
     
     # 规划路径
     # paths = 
     # env.path_planning(paths)
-    ROBOT = [np.array([0, -1, 0]), np.array([0, -2, 0])]
+    ROBOT = [np.array([0., -1., 0.]), np.array([0., -2., 0.])]
     alg = MySimpleAlgorithm(env.graph, ROBOT)
     alg.calculate_avaliable_solution()
     walks = alg.find_optimize_solution()
@@ -159,8 +163,8 @@ if __name__ == '__main__':
     env.path_planning(result)
     
     # 机器人运动
-    for i in range(10):
-        env.render()
+    while not len(env.robot_finihsed_set) == env.robot_num:
+        env.step()
     '''
     for i in range(300):
 

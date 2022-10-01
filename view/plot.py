@@ -95,8 +95,8 @@ class env_viewer():
             self.drawRobot(robot)
             
     def drawPipeEdge(self, edge):
-        layer_item1 = edge.v1.position[2]
-        layer_item2 = edge.v2.position[2]
+        layer_item1 = int(edge.v1.position[2])
+        layer_item2 = int(edge.v2.position[2])
         if layer_item1 == layer_item2:
             # self.line_plot2(self.axes[layer_item1], edge, markersize=2, color=edge.color)
             self.line_plot(self.axes[layer_item1], edge, markersize=2, color=edge.color)
@@ -104,8 +104,8 @@ class env_viewer():
             
         
     def drawPipeVertice(self, item):
-        layer_item = item.position[2]
-        if item.neighbor[4] > 0 or item.neighbor[5] > 0:
+        layer_item = int(item.position[2])
+        if item.neighbor_flag[4] > 0 or item.neighbor_flag[5] > 0:
             self.point_plot(self.axes[layer_item], item.position, radius=0.1, color="red")
         else:
             self.point_plot(self.axes[layer_item], item.position, radius=0.08, color="black")
@@ -115,7 +115,7 @@ class env_viewer():
         robot_circle = mpl.patches.Circle(xy=(robot.position[0], robot.position[1]), radius = 0.15, color = robot.color)
         robot_circle.set_zorder(2)
         #decide which ax it would be drawn. if the robot is in vertical pipe, it would be drawn in the ax where the vertice in front of the robot.
-        temp = robot.position[2]
+        temp = int(robot.position[2])
         layer_item = 0
         if temp == 0 or temp == 1:
             layer_item = temp
@@ -131,10 +131,10 @@ class env_viewer():
         arrow = mpl.patches.Circle(xy=(robot.position[0], robot.position[1]), radius = 0.1, color = robot.color)
         # up: yellow
         if robot.orientation[4] == 1:
-            arrow = mpl.patches.Circle(xy=(robot.position[0], robot.position[1]), radius = 0.1, color = 'yellow')
+            arrow = mpl.patches.Circle(xy=(robot.position[0], robot.position[1]), radius = 0.1, color = 'indigo')
         # down: purple
         elif robot.orientation[5] == 1:
-            arrow = mpl.patches.Circle(xy=(robot.position[0], robot.position[1]), radius = 0.1, color = 'darkviolet')
+            arrow = mpl.patches.Circle(xy=(robot.position[0], robot.position[1]), radius = 0.1, color = 'deeppink')
         # other ori: arrow
         elif robot.orientation[0] == 1:
             arrow = mpl.patches.Arrow(robot.position[0], robot.position[1], 0.3, 0, width = 0.1, color = robot.color)
