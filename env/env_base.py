@@ -9,6 +9,7 @@ from elements.robot import Robot
 from elements.pipeVertices import Vertice
 from elements.pipeEdge import Edge
 from view.plot import env_viewer
+from view.plot3D import env_viewer_3D
 from algorithm.weightGraph import WeightGraph
 from algorithm.simpleAlgorithm import MySimpleAlgorithm
 
@@ -24,7 +25,7 @@ pipeDict2 = {'vertices': [vertices0, vertices1], 'verticalEdge': [Edge0_1], 'hor
 ROBOTS = [np.array([0., -1., 0.]), [0, 0, 1, 0, 0, 0], np.array([0., -2., 0.]), [0, 0, 0, 1, 0, 0]]
 
 class Env():
-    def __init__(self, dt, pipeDict, robot_num=2):
+    def __init__(self, dt, pipeDict, robot_num=2, dim=2):
         self.robot_num = robot_num
         self.robots = []
         self.dt = dt
@@ -48,7 +49,11 @@ class Env():
         self.nodes = []
         self.edges = []
         
-        self.plot = env_viewer(self)
+        self.plot = None
+        if dim == 3:
+            self.plot = env_viewer_3D(self)
+        else:
+            self.plot = env_viewer(self)
         self._create_pipe_scenario()
         self._create_robots(2)
         
@@ -97,7 +102,7 @@ class Env():
                     robot.assign_path(path)
                     robot.allocated = True
                 
-        self.plot.upgrade_pipe_path()
+        # self.plot.upgrade_pipe_path()
     
     def upgrade_edges(self, edges, color):
         # 为规划的路径标注颜色
@@ -146,7 +151,7 @@ class Env():
         
         
 if __name__ == '__main__':
-    env = Env(dt = 0.8, pipeDict = pipeDict2)
+    env = Env(dt = 0.8, pipeDict = pipeDict2, dim=3)
     
     # 规划路径
     # paths = 
