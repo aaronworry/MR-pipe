@@ -1,4 +1,4 @@
 # MR-pipe
 
-cd env
+cd env  
 python env_base.py
