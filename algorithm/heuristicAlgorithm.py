@@ -1,13 +1,11 @@
 from operator import itemgetter
 import time
-from weightGraph import *
-from simpleAlgorithm import *
 import sys
 
 
 # I didn't want to bother with global variables therefore,
 # I created a class to encapsulate my algorithm.
-class MyAlgorithm:
+class HeuristicAlgorithm():
 
     def __init__(self):
         self.__my_graph = None
@@ -22,7 +20,6 @@ class MyAlgorithm:
 
     def my_algorithm(self, k):
         self.__k = k
-        self.init_values2()
         start_time = time.perf_counter()
         self.sort_edges_descending()
         print("sorted edges:")
@@ -37,67 +34,7 @@ class MyAlgorithm:
         # print("cycles2:")
         # print(self.__second_closed_walks)
 
-    def simple_algo(self, k):
-        print("simple algo to compare")
-        self.__k = k
-        self.init_values2()
-        start_time = time.perf_counter()
-        if len(self.__sorted_edges) < 1:
-            self.sort_edges_descending()
-        cycles = []
-        if self.__my_graph.get_is1Degree():
-            edges = self.__my_graph.get_degree1()
-            cycles = self.generate_cycles(edges)
-        smp = MySimpleAlgorithm(self.__my_graph.get_edges(), self.__my_graph.get_initial_vertex(), self.__k, self.__n,cycles)
-        found = smp.main()
 
-        minLen = sys.maxsize
-        for e in found:
-            lenList = []
-            simple_closed_walk = []
-            for walk in e:
-                len1 = self.get_walk_length(walk)
-                lenList.append(len1)
-                simple_closed_walk.append({'cycle': walk, 'length': len1, 'count': len(walk)})
-            tempmax = max(lenList)
-            if tempmax < minLen:
-                self.__second_closed_walks = simple_closed_walk
-                minLen = tempmax
-        if self.__second_closed_walks:
-            self.__second_closed_walks = sorted(self.__second_closed_walks, key=itemgetter('length'), reverse=True)
-        total_time = (time.perf_counter() - start_time)
-        print(total_time)
-        print("simple finishh")
-        print(self.__second_closed_walks)
-        return [self.__second_closed_walks, total_time]
-
-    def init_values1(self):
-        self.__my_graph = None
-        self.__sorted_edges = []
-        self.__closed_walks = []
-        self.__walks_lengths = []
-        self.__initial_vertex = 0
-        self.__k = 0
-        self.__second_closed_walks = []
-        self.__n = 0
-
-    def init_values2(self):
-        self.__sorted_edges = []
-        self.__closed_walks = []
-        self.__walks_lengths = []
-        self.__second_closed_walks = []
-
-    def generate_graph(self, s, n, e, k, i):
-        self.init_values1()
-        self.__initial_vertex = s
-        self.__n = n
-        self.__k = k
-        graph = WeightGraph()
-        res = graph.generate_random_graph(n, e, s)
-        graph.print_graph(i)
-        self.__my_graph = graph
-        print("graph generated")
-        return res
 
     def sort_edges_descending(self):
         weights = self.__my_graph.get_weights()
@@ -472,24 +409,7 @@ class MyAlgorithm:
                 else:
                     path3.extend(walk[1:])
 
-    def add_reverse_edges(self, edge_list):
-        reverse_list = []
-        for e in edge_list:
-            reverse_list.append(e.reverse())
-        for e in reverse_list:
-            edge_list.append(e)
 
-    def check_include(self, walk, edge):
-        n = len(walk)
-        for i in range(0, n):
-            if i + 1 != n:
-                mylist = [walk[i], walk[i + 1]]
-                if mylist == edge:
-                    return True
-                mylist.reverse()
-                if mylist == edge:
-                    return True
-        return False
 
     def get_walk_length(self, walk):
         if len(walk) > 0:
@@ -504,35 +424,4 @@ class MyAlgorithm:
         else:
             print("walk is empty")
             return 0
-
-    def generate_cycles(self, edges):
-        print("generate")
-        print(edges)
-        cycles = []
-        for e in edges:
-            walk = []
-            path3 = e
-            path1 = self.__my_graph.get_shortest_path(self.__my_graph.get_initial_vertex(), path3[0])[0]
-            # SP(vj, v1)
-            path2 = self.__my_graph.get_shortest_path(path3[1], self.__my_graph.get_initial_vertex())[0]
-
-            # try to create closed walk
-            if self.try_to_merge(path1, path2, walk):
-                self.add_edge_to_walk(walk, path3)
-            # try to create closed walk
-            elif self.try_to_merge(path1, path3, walk):
-                # path2 ile birleştirmeye çalış
-                self.add_edge_to_walk(walk, path2)
-            # try to create closed walk
-            elif self.try_to_merge(path2, path3, walk):
-                # path1 ile birleştirmeye çalış
-                self.add_edge_to_walk(walk, path1)
-            else:
-                walk.extend(self.get_maximum(path1, path2, path3))
-            if len(walk) > 1:
-                if walk[0] != walk[-1] and self.is_in_edge_list([walk[0], walk[-1]]):
-                    walk.append(walk[0])
-                cycles.append(walk)
-        return cycles
-
 

@@ -2,7 +2,7 @@ import time
 import sys
 import numpy as np
 
-class MySimpleAlgorithm():
+class ExhaustiveAlgorithm():
     def __init__(self, graph, ROBOT):        
         self.Graph = graph
         self.paths = []

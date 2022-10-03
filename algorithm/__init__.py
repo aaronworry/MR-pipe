@@ -1,2 +1,3 @@
-from .simpleAlgorithm import MySimpleAlgorithm
+from .exhaustiveAlgorithm import ExhaustiveAlgorithm
+from .heuristicAlgorithm import HeuristicAlgorithm
 from .weightGraph import WeightGraph

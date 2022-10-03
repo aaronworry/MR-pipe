@@ -11,7 +11,8 @@ from elements.pipeEdge import Edge
 from view.plot import env_viewer
 from view.plot3D import env_viewer_3D
 from algorithm.weightGraph import WeightGraph
-from algorithm.simpleAlgorithm import MySimpleAlgorithm
+from algorithm.exhaustiveAlgorithm import ExhaustiveAlgorithm
+from algorithm.heuristicAlgorithm import HeuristicAlgorithm
 
 vertices0 = np.array([[0., 0., 0.], [0., -1., 0.], [0., -2., 0.], [0., -3., 0.], [1., 0., 0.], [1., -3., 0.], [3., 0., 0.], [3., -3., 0.]])
 vertices1 = np.array([[0., 0., 1.], [0., -1., 1.], [0., -2., 1.], [0., -3., 1.], [1., 0., 1.], [1., -1., 1.], [1., -2., 1.], [1., -3., 1.]])
@@ -157,7 +158,7 @@ if __name__ == '__main__':
     # paths = 
     # env.path_planning(paths)
     ROBOT = [np.array([0., -1., 0.]), np.array([0., -2., 0.])]
-    alg = MySimpleAlgorithm(env.graph, ROBOT)
+    alg = ExhaustiveAlgorithm(env.graph, ROBOT)
     alg.calculate_avaliable_solution()
     walks = alg.find_optimize_solution()
     result = env.graph.generate_position_of_path(walks)
