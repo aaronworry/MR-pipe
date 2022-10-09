@@ -104,6 +104,7 @@ class Env():
                     robot.allocated = True
                 
         # self.plot.upgrade_pipe_path()
+        self.render()
     
     def upgrade_edges(self, edges, color):
         # 为规划的路径标注颜色
@@ -122,7 +123,7 @@ class Env():
         
     def step(self):
         for robot in self.robots:
-            robot.step()
+            robot.step_path()
             self.reward += robot.reward
         self.render()
         
@@ -158,16 +159,19 @@ if __name__ == '__main__':
     # paths = 
     # env.path_planning(paths)
     ROBOT = [np.array([0., -1., 0.]), np.array([0., -2., 0.])]
+    """
     alg = ExhaustiveAlgorithm(env.graph, ROBOT)
     alg.calculate_avaliable_solution()
-    walks = alg.find_optimize_solution()
-    result = env.graph.generate_position_of_path(walks)
-    # print(result)
+    walks = alg.find_optimize_solution()    
+    """
+    alg = HeuristicAlgorithm(env.graph, ROBOT)
+    walks = alg.my_algorithm()
+    walks = env.graph.trans_paths(walks)
     
-    # env.upgrade_edges(result[0], 'blue')
-    # env.upgrade_edges(result[1], 'green')
+    result = env.graph.generate_position_of_path(walks)
     env.path_planning(result)
     
+    time.sleep(1)
     # 机器人运动
     while not len(env.robot_finihsed_set) == env.robot_num:
         env.step()

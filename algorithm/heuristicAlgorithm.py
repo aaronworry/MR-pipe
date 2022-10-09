@@ -1,44 +1,42 @@
 from operator import itemgetter
 import time
 import sys
+import numpy as np
 
 
 # I didn't want to bother with global variables therefore,
 # I created a class to encapsulate my algorithm.
 class HeuristicAlgorithm():
 
-    def __init__(self):
-        self.__my_graph = None
+    def __init__(self, graph, ROBOT):
+        self.Graph = graph
         self.__edges = None
         self.__sorted_edges = []
-        self.__closed_walks = []
-        self.__second_closed_walks = []
-        self.__walks_lengths = []
-        self.__initial_vertex = 0
-        self.__k = 0
-        self.__n = 0
+        self.paths = {}
+        self.get_start_ids(ROBOT)
+        self.k = len(ROBOT)
+        self.graph = [list(elem) for elem in self.Graph.simpleGraph.get_edgelist()]
+        
+    def get_start_ids(self, ROBOT):
+        start_ids = {}
+        for robot in ROBOT:
+            for i in range(self.Graph.node):
+                if np.array_equal(self.Graph.graph.vs[i]['position'], robot):
+                    if self.Graph.graph.vs[i]['id'] not in start_ids:
+                        start_ids[self.Graph.graph.vs[i]['id']] = 1
+                        self.paths[self.Graph.graph.vs[i]['id']] = []
+                    else:
+                        start_ids[self.Graph.graph.vs[i]['id']] += 1 
+        self.start_ids = start_ids
 
-    def my_algorithm(self, k):
-        self.__k = k
-        start_time = time.perf_counter()
+    def my_algorithm(self):
         self.sort_edges_descending()
-        print("sorted edges:")
-        print(self.__sorted_edges)
-        self.create_closed_walk(k)
-        total_time = (time.perf_counter() - start_time)
-        print("cycles:")
-        print(self.__closed_walks)
-        print(total_time)
-        return [self.__closed_walks, total_time]
-        # self.simple_algo()
-        # print("cycles2:")
-        # print(self.__second_closed_walks)
-
-
+        self.create_paths()
+        return self.paths
 
     def sort_edges_descending(self):
-        weights = self.__my_graph.get_weights()
-        edges = self.__my_graph.get_edges()
+        weights = self.Graph.simpleGraph.es['weight']
+        edges = self.Graph.simpleGraph.get_edgelist()
         self.__edges = edges
         n = len(weights)
         for i in range(n):
@@ -73,63 +71,36 @@ class HeuristicAlgorithm():
                 return True
         return False
 
-    def create_closed_walk(self, k):
-        # for each edge
+    def create_paths(self):
         for e in self.__sorted_edges:
+            path_temp = [e['start_node'], e['end_node']]
+            for item in self.start_ids:
+                walk = []
+                if not self.check_added(path_temp, self.paths[item]):
+                    path1 = self.Graph.simpleGraph.get_shortest_paths(item, to=path_temp[0], weights=self.Graph.simpleGraph.es["weight"], output="vpath",)[0]
+                    for goal in self.Graph.degree1:
+                        path2 = None
+                        distance = sys.maxsize
+                        if goal != item:
+                            path = self.Graph.simpleGraph.get_shortest_paths(path_temp[1], to=goal, weights=self.Graph.simpleGraph.es["weight"], output="vpath",)[0]
+                            temp = self.Graph.get_length_simple_graph(path)
+                            if temp < distance:
+                                path2 = path
+                                distance = temp
+                    self.try_to_merge(path1, path2, walk)   
+                    self.paths[item].append(
+                        {'path': walk, 'length': self.get_walk_length(walk), 'count': len(walk)})
+        for item in self.paths:
+            self.paths[item] = sorted(self.paths[item], key=itemgetter('length'), reverse=True)   # 降序
+        for i in self.start_ids:
+            if self.start_ids[i] > len(self.paths[i]):
+                self.add_dummy_tours(i, self.start_ids[i] - len(self.paths[i]))
+        result = self.merge_walks()   # [{}, {}, {}, ...]        
+        self.paths = result
 
-            # e = {vi, vj}
-            path3 = [e['start_node'], e['end_node']]
-            walk = []
-            # if e is not already covered by an existing tour.
-            if not self.check_added(path3):
-                # SP(v1, vi)
-                path1 = self.__my_graph.get_shortest_path(self.__my_graph.get_initial_vertex(), path3[0])[0]
-                # SP(vj, v1)
-                path2 = self.__my_graph.get_shortest_path(path3[1], self.__my_graph.get_initial_vertex())[0]
-
-                # try to create closed walk
-                if self.try_to_merge(path1, path2, walk):
-                    self.add_edge_to_walk(walk, path3)
-                # try to create closed walk
-                elif self.try_to_merge(path1, path3, walk):
-                    self.add_edge_to_walk(walk, path2)
-                # try to create closed walk
-                elif self.try_to_merge(path2, path3, walk):
-                    self.add_edge_to_walk(walk, path1)
-                else:
-                    walk.extend(self.get_maximum(path1, path2, path3))
-                if len(walk) > 1:
-                    if walk[0] != walk[-1] and self.is_in_edge_list([walk[0], walk[-1]]):
-                        walk.append(walk[0])
-                    self.__closed_walks.append(
-                        {'cycle': walk, 'length': self.get_walk_length(walk), 'count': len(walk)})
-
-        self.__closed_walks = sorted(self.__closed_walks, key=itemgetter('length'), reverse=True)
-        print(self.__closed_walks)
-        if len(self.__closed_walks) < k:
-            self.add_dummy_tours(k - len(self.__closed_walks))
-            self.__closed_walks = sorted(self.__closed_walks, key=itemgetter('length'), reverse=True)
-        elif len(self.__closed_walks) > k:
-            self.merge_tours(k)
-            self.__closed_walks = sorted(self.__closed_walks, key=itemgetter('length'), reverse=True)
-        print("len")
-        print(len(self.__closed_walks))
-
-    def get_maximum(self, a, b, c):
-
-        if (len(a) >= len(b)) and (len(a) >= len(c)):
-            largest = a
-
-        elif (len(b) >= len(a)) and (len(b) >= len(c)):
-            largest = b
-        else:
-            largest = c
-
-        return largest
-
-    def check_added(self, edge):
-        for e in self.__closed_walks:
-            walk = e['cycle']
+    def check_added(self, edge, paths):
+        for e in paths:
+            walk = e['path']
             if self.sub_list_exists(walk, edge):
                 return True
             reverse_edge = [edge[1], edge[0]]
@@ -137,171 +108,154 @@ class HeuristicAlgorithm():
                 return True
         return False
 
-    def add_dummy_tours(self, missing_number):
-        listLen = len(self.__sorted_edges)
-        for i in range(listLen):
-            e = self.__sorted_edges[(listLen - i) - 1]
-            walk = [e['end_node'], e['start_node'], e['end_node']]
-            if self.__initial_vertex in walk:
-                for j in range(missing_number):
-                    self.__closed_walks.append(
-                        {'cycle': walk, 'length': self.get_walk_length(walk), 'count': len(walk)})
-                break
+    def add_dummy_tours(self, idx, missing_number):
+        for j in range(missing_number):
+            self.paths[idx].append({'path': [idx], 'length': 0, 'count': 1})
 
-    def merge_tours(self, k):
-        listLen = len(self.__closed_walks)
-        n = listLen - k
-        is_ok = False
+    
+    def merge_walks(self):
+        result = self.find_combinations()
+        
+        R, maxL, totalL = None, sys.maxsize, sys.maxsize
+        
+        for path_comb in result:
+            edge_assigned_list = self.assign_edges(path_comb)
+            # 统计未经过的edge，将edge分配给这些组合，edge离哪条路径最近，就分配给哪条, 并由小到大排序
+            updated_path = self.update_paths(path_comb, edge_assigned_list)
+            # 对于每个路径，按被分配edge离路径的距离从小到大的顺序添加edge到该路径中，添加一个edge, 则更新一次路径
+            
+            # 对于每条路径，记录里面的重复的子路径，找到最短的子路径进行替换
+            total_length, max_length = 0, 0
+            for path in updated_path:
+                total_length += path['length']
+                if max_length <= path['length']:
+                    max_length = path['length']
+            # 计算路径总长度以及最大路径长度
+            if maxL > max_length:
+                maxL = max_length
+                R = updated_path
+            # 选最大的长度最小的
+            return R
+
+    
+    def update_paths(self, path_comb, edge_assigned_list):
+        # path_comb [{}, {}, {}]   edge_assigned_list    [[{}, {}, {}], [{}, {}, {}], [{}, {}, {}]]
+        n = len(path_comb)
         for i in range(n):
-            if i == 0:
-                if self.merge_round2():
-                    print("round2")
-                    is_ok = True
-                    listLen = len(self.__closed_walks)
-                    if listLen == k:
-                        return True
-                if not is_ok and self.merge_round1():
-                    print("round1")
-                    is_ok = True
-                    listLen = len(self.__closed_walks)
-                    if listLen == k:
-                        return True
-            if i > 0 and is_ok:
-                is_ok = False
-                if self.merge_round2():
-                    print("round2")
-                    is_ok = True
-                    listLen = len(self.__closed_walks)
-                    if listLen == k:
-                        return True
-                if not is_ok and self.merge_round1():
-                    print("round1")
-                    is_ok = True
-                    listLen = len(self.__closed_walks)
-                    if listLen == k:
-                        return True
+            initial_path = path_comb[i]['path'].copy()
+            for edge in edge_assigned_list[i]:   # {}
+                # edge['edge'] = [a, b]        edge['edge_id'] = a 或 b      edge['id'] = q
+                _, edge_temp, id_temp = self.cal_edge_path_distance(initial_path, edge)
+                insert_path = self.Graph.simpleGraph.get_shortest_paths(id_temp, to=edge_temp, weights=self.Graph.simpleGraph.es["weight"], output="vpath",)[0]
+                path_temp2 = insert_path.copy()
+                path_temp2.reverse()
+                path_one = edge['edge'][0] if edge['edge'][1] == edge_temp else edge['edge'][1]
+                insert_path.extend([path_one])
+                insert_path.extend([path_temp2])
+                for i, idx in enumerate(initial_path):
+                    if idx == edge['id']:
+                        a = initial_path[:i]
+                        b = initial_path[i+1:]
+                        a.extend(insert_path)
+                        a.extend(b)
+                        initial_path = a
+                        break
+            path_comb[i]['path'] = initial_path
+            path_comb[i]['length'] = self.get_walk_length(initial_path)
+            path_comb[i]['count'] = len(initial_path)
+        return path_comb
 
-    def merge_round1(self):
-        listLen = len(self.__closed_walks)
-        """
-        for i in range(listLen):
-            sm_el = self.__closed_walks[listLen - i - 1]
-            walk_path = sm_el['cycle']
-            for j in range(i, listLen - 1):
-                next1 = self.__closed_walks[(listLen - j - 1) - 1]
-                next_path = next1['cycle']
-                if walk_path[-1] == next_path[0]:
-                    next_path.pop()
-                    next_path.extend(walk_path)
-                    self.__closed_walks[(listLen - j - 1) - 1] = {'cycle': next_path,
-                                                                  'length': self.get_walk_length(next_path),
-                                                                  'count': len(next_path)}
-                    del self.__closed_walks[listLen - i - 1]
-                    self.__closed_walks = sorted(self.__closed_walks, key=itemgetter('length'), reverse=True)
-                    return True
-        """
-        breakk = False
-        for i in range(listLen):
-            sm_el = self.__closed_walks[listLen - i - 1]
-            walk_path = sm_el['cycle']
-            for j in range(i, listLen - 1):
-                if j < 2:
-                    next1 = self.__closed_walks[(listLen - j - 1) - 1]
-                    next_path = next1['cycle']
-                    if walk_path[0] == next_path[-1]:
-                        next_path.pop()
-                        next_path.extend(walk_path)
-                        self.__closed_walks[(listLen - j - 1) - 1] = {'cycle': next_path,
-                                                                      'length': self.get_walk_length(next_path),
-                                                                      'count': len(next_path)}
-                        del self.__closed_walks[listLen - i - 1]
-                        self.__closed_walks = sorted(self.__closed_walks, key=itemgetter('length'), reverse=True)
-                        return True
-                    if self.is_in_edge_list([walk_path[0], next_path[-1]]):
-                        walk_path.append(next_path[-1])
-                        next_path.extend(walk_path)
-                        self.__closed_walks[(listLen - j - 1) - 1] = {'cycle': next_path,
-                                                                      'length': self.get_walk_length(next_path),
-                                                                      'count': len(next_path)}
-                        del self.__closed_walks[listLen - i - 1]
-                        self.__closed_walks = sorted(self.__closed_walks, key=itemgetter('length'), reverse=True)
-                        return True
-                elif i != (listLen - 1) and (listLen - (j - 1) - 1) - 1 != listLen - (i + 1) - 1:
-                    next12 = self.__closed_walks[(listLen - (j - 1) - 1) - 1]
-                    next_path2 = next12['cycle']
-                    sm_el1 = self.__closed_walks[listLen - (i + 1) - 1]
-                    walk_path1 = sm_el1['cycle']
-                    if walk_path1[0] == next_path2[-1]:
-                        next_path2.pop()
-                        next_path2.extend(walk_path1)
-                        self.__closed_walks[(listLen - (j - 1) - 1) - 1] = {'cycle': next_path2,
-                                                                            'length': self.get_walk_length(next_path2),
-                                                                            'count': len(next_path2)}
-                        del self.__closed_walks[listLen - (i + 1) - 1]
-                        self.__closed_walks = sorted(self.__closed_walks, key=itemgetter('length'), reverse=True)
-                        return True
-                    if self.is_in_edge_list([walk_path1[0], next_path2[-1]]):
-                        walk_path1.append(next_path2[-1])
-                        next_path2.extend(walk_path1)
-                        self.__closed_walks[(listLen - (j - 1) - 1) - 1] = {'cycle': next_path2,
-                                                                            'length': self.get_walk_length(next_path2),
-                                                                            'count': len(next_path2)}
-                        del self.__closed_walks[listLen - (i + 1) - 1]
-                        self.__closed_walks = sorted(self.__closed_walks, key=itemgetter('length'), reverse=True)
-                        return True
-                if j > 1:
-                    next1 = self.__closed_walks[(listLen - j - 1) - 1]
-                    next_path = next1['cycle']
-                    if walk_path[0] == next_path[-1]:
-                        next_path.pop()
-                        next_path.extend(walk_path)
-                        self.__closed_walks[(listLen - j - 1) - 1] = {'cycle': next_path,
-                                                                      'length': self.get_walk_length(next_path),
-                                                                      'count': len(next_path)}
-                        del self.__closed_walks[listLen - i - 1]
-                        self.__closed_walks = sorted(self.__closed_walks, key=itemgetter('length'), reverse=True)
-                        return True
-                    if self.is_in_edge_list([walk_path[0], next_path[-1]]):
-                        walk_path.append(next_path[-1])
-                        next_path.extend(walk_path)
-                        self.__closed_walks[(listLen - j - 1) - 1] = {'cycle': next_path,
-                                                                      'length': self.get_walk_length(next_path),
-                                                                      'count': len(next_path)}
-                        del self.__closed_walks[listLen - i - 1]
-                        self.__closed_walks = sorted(self.__closed_walks, key=itemgetter('length'), reverse=True)
-                        return True
+                    
 
-        return False
+    def assign_edges(self, path_comb):
+        # [{}, {}, {}]
+        edge_dict = {}
+        unreached_edge = []    # 未经过的边
+        for item in path_comb:
+            path = item['path']
+            for i in range(len(path)-1):
+                if (path[i], path[i+1]) in edge_dict:
+                    edge_dict[(path[i], path[i+1])] += 1
+                elif (path[i+1], path[i]) in edge_dict:
+                    edge_dict[(path[i+1], path[i])] += 1
+                else:
+                    edge_dict[(path[i], path[i+1])] = 1
+        for item in self.graph:
+            if tuple((item[0], item[1])) in edge_dict or tuple((item[1], item[0])) in edge_dict:
+                continue
+            else:
+                unreached_edge.append(item)
+        
+        assign_edges = [[]] * len(path_comb)              #  [  [{}, {}, {}],   [],  [] ]
+        for edge in unreached_edge:
+            distance, edge_flag, id_flag = sys.maxsize, None, 0
+            assign_id = 0
+            for i in range(len(path_comb)):
+                dist_temp, edge_temp, id_temp = self.cal_edge_path_distance(path_comb[i]['path'], edge)
+                if dist_temp < distance:
+                    distance, edge_flag, id_flag = dist_temp, edge_temp, id_temp
+                    assign_id = i
+            assign_edges[assign_id].append({'edge':edge, 'dis':distance, 'edge_id':edge_flag, 'id':id_temp})
+        for i in range(len(assign_edges)):
+            assign_edges[i] = sorted(assign_edges[i], key=itemgetter('dis'))
+        return assign_edges
+        
+    def cal_edge_path_distance(self, path, edge):
+        if edge[0] in path:
+            return 0, edge[0], edge[0]
+        elif edge[1] in path:
+            return 0, edge[1], edge[1]
+        else:
+            result = sys.maxsize
+            id_temp = 0
+            edge_temp = None
+            for idx in path:
+                path_temp1 = self.Graph.simpleGraph.get_shortest_paths(idx, to=edge[0], weights=self.Graph.simpleGraph.es["weight"], output="vpath",)[0]
+                path_temp2 = self.Graph.simpleGraph.get_shortest_paths(idx, to=edge[1], weights=self.Graph.simpleGraph.es["weight"], output="vpath",)[0]
+                dist1 = self.Graph.get_length_simple_graph(path_temp1)
+                dist2 = self.Graph.get_length_simple_graph(path_temp2)
+                if min(dist1, dist2) < result:
+                    id_temp = idx
+                    if dist1 < dist2:
+                        result = dist1
+                        edge_temp = edge[0]
+                    else:    
+                        result = dist2
+                        edge_temp = edge[1]
+            return result, edge_temp, id_temp
+                
 
-    def merge_round2(self):
-        listLen = len(self.__closed_walks)
-        self.__closed_walks = sorted(self.__closed_walks, key=itemgetter('count'))
-
-        for i in range(listLen):
-            sm_el = self.__closed_walks[i]
-            sm_walk = sm_el['cycle']
-            for j in range(i + 1, listLen):
-                big_el = self.__closed_walks[j]
-                big_walk = big_el['cycle']
-                n = len(sm_walk)
-                big_ok = True
-                for k in range(0, n):
-                    if k + 1 != n:
-                        edge = [sm_walk[k], sm_walk[k + 1]]
-                        is_ok = False
-                        if self.sub_list_exists(big_walk, edge):
-                            is_ok = True
-                        edge.reverse()
-                        if self.sub_list_exists(big_walk, edge):
-                            is_ok = True
-                        if not is_ok:
-                            big_ok = False
-                if big_ok:
-                    del self.__closed_walks[i]
-                    self.__closed_walks = sorted(self.__closed_walks, key=itemgetter('length'), reverse=True)
-                    return True
-        self.__closed_walks = sorted(self.__closed_walks, key=itemgetter('length'), reverse=True)
-        return False
+    def find_combinations(self):
+        result = []
+        aspect_result = []
+        for item in self.start_ids:
+            aspect_temp = []
+            print(self.paths[item], self.start_ids[item])
+            print("--------")
+            self.aspect_comb(self.paths[item], self.start_ids[item], aspect_temp, [], 0)
+            aspect_result.append(aspect_temp)          #aspect_temp:  [   [{}, {}]    [{}, {}]       ]
+        self.global_comb(aspect_result, [], 0)
+        # result = [ [{}, {}, {}],  [{}, {}, {}],   [{}, {}, {}]      ]
+        return result
+    
+    def global_comb(self, A, out=[], i=0):        
+        if i >= len(A):
+            result.append(out)
+            return        
+        for j in range(len(A[i])):
+            self.global_comb(A, out.extend(A[i][j]), i + 1)
+        
+    def aspect_comb(self, A, k, aspect_temp, out=[], i=0):
+        # k <= len(A) - i
+        if len(A) == 0 or k > len(A):
+            return
+        if k == 0:
+            aspect_temp.append(out)
+            return
+        for j in range(i, len(A)):
+            # add current element `A[j]` to the solution and recur for next index
+            # `j+1` with one less element `k-1`
+            self.aspect_comb(A, k - 1, aspect_temp, out.extend([A[j]]), j + 1)
 
     def sub_list_exists(self, list1, list2):
         if len(list2) < 2:
@@ -309,107 +263,17 @@ class HeuristicAlgorithm():
         return ''.join(map(str, list2)) in ''.join(map(str, list1))
 
     def try_to_merge(self, path1, path2, walk):
-
-        if len(path1) > 1 and len(path2) > 1 and \
-                (not self.sub_list_exists(path1, path2)):
-            if path1[-1] == path2[0]:
-                if len(walk) >= len(path1):
-                    if not self.sub_list_exists(walk, path1):
-                        walk.extend(path1)
-                else:
-                    walk.extend(path1)
-
-                if len(walk) >= len(path2[1:]):
-                    if not self.sub_list_exists(walk, path2[1:]):
-                        walk.extend(path2[1:])
-                else:
-                    walk.extend(path2[1:])
-
-                return True
-
-            elif self.is_in_edge_list([path1[0], path2[-1]]):
-                if len(walk) >= len(path2):
-                    if not self.sub_list_exists(walk, path2):
-                        walk.extend(path2)
-                else:
-                    walk.extend(path2)
-
-                if len(walk) >= len(path1):
-                    if not self.sub_list_exists(walk, path1):
-                        walk.extend(path1)
-                else:
-                    walk.extend(path1)
-
-                return True
-
-            elif self.is_in_edge_list([path1[-1], path2[0]]):
-                if len(walk) >= len(path1):
-                    if not self.sub_list_exists(walk, path1):
-                        walk.extend(path1)
-                else:
-                    walk.extend(path1)
-
-                if len(walk) >= len(path2):
-                    if not self.sub_list_exists(walk, path2):
-                        walk.extend(path2)
-                else:
-                    walk.extend(path2)
-
-                return True
-            elif path1[0] == path2[-1]:
-                if len(walk) >= len(path2):
-                    if not self.sub_list_exists(walk, path2):
-                        walk.extend(path2)
-                else:
-                    walk.extend(path2)
-
-                if len(walk) >= len(path1[1:]):
-                    if not self.sub_list_exists(walk, path1[1:]):
-                        walk.extend(path1[1:])
-                else:
-                    walk.extend(path1[1:])
-                return True
-
-            else:
-                return False
+        if len(path1) == 1 or len(path2) == 1:
+            walk.extend(path1)
+            walk.extend(path2)
         else:
-            return False
-
-    def add_edge_to_walk(self, walk, path3):
-        # walk eğer path'ü içermiyorsa path3'u ekle
-        if len(walk) > 1 and len(path3) > 1 and \
-                (not self.sub_list_exists(walk, path3)):
-            # eğer path1'in son node'u ile path3'un ilk node'u eşitse
-            if walk[-1] == path3[0]:
-                if len(walk) >= len(path3[1:]):
-                    if not self.sub_list_exists(walk, path3[1:]):
-                        walk.extend(path3[1:])
-                else:
-                    walk.extend(path3[1:])
-
-            elif self.is_in_edge_list([walk[-1], path3[0]]):
-                if len(walk) >= len(path3):
-                    if not self.sub_list_exists(walk, path3):
-                        walk.extend(path3)
-                else:
-                    walk.extend(path3)
-
-            elif self.is_in_edge_list([walk[0], path3[-1]]):
-                if len(path3) >= len(walk):
-                    if not self.sub_list_exists(path3, walk):
-                        path3.extend(walk)
-                else:
-                    path3.extend(walk)
-
-            elif walk[0] == path3[-1]:
-
-                if len(path3) >= len(walk[1:]):
-                    if not self.sub_list_exists(path3, walk[1:]):
-                        path3.extend(walk[1:])
-                else:
-                    path3.extend(walk[1:])
-
-
+            if path1[-2] == path2[0] and path1[-1] == path2[1]:
+                walk.extend(path1)
+                if len(path2) > 2:
+                    walk.extend(path2[2:])
+            else:
+                walk.extend(path1)
+                walk.extend(path2)
 
     def get_walk_length(self, walk):
         if len(walk) > 0:

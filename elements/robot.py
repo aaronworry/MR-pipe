@@ -9,7 +9,6 @@ class Robot():
         self.orientation = ori
         self.position = init_position
         
-        self.turnFlag = False
         self.nextOri = None # next heading after turn, when velocity is larger than 0
         self.afterDis = -10.
         self.backOri = None # next back after turn, when velocity is smaller than 0
@@ -34,7 +33,6 @@ class Robot():
         self.allocated = False
         self.finished = False
         self.position = self.init_position
-        self.turnFlag = False
         self.nextOri = None # next heading after turn, when velocity is larger than 0
         self.afterDis = -10.
         self.backOri = None # next back after turn, when velocity is smaller than 0
@@ -67,66 +65,76 @@ class Robot():
         else:
             self.next_vertice = self.edge.v1
             self.last_vertice = self.edge.v2
-            
     
-    def step(self):
+    def action_path(self):
+        velocity = 0.2
+        next_edge_pos1, next_edge_pos2 = self.path[self.passed_edge_num + 1][0], self.path[self.passed_edge_num + 1][1]        
+        forward_orientation = self.cal_orientation(next_edge_pos1, next_edge_pos2)   
+        return velocity, forward_orientation
+    
+    def step_path(self):
         if not self.finished:
             if self.passed_edge_num == len(self.path) - 1:
                 velocity = 0.2
                 position = self.position.copy()
                 if velocity * self.env.dt - self.distance_next_vertice >= 0:
-                    self.position = self.update_position(position, self.distance_next_vertice)
+                    self.position = self.update_position(position, self.distance_next_vertice, self.orientation)
                     self.finished = True
                     self.reward = 1
                 else:
-                    self.position = self.update_position(position, velocity * self.env.dt)
+                    self.position = self.update_position(position, velocity * self.env.dt, self.orientation)
                     self.distance_last_vertice += velocity * self.env.dt
                     self.distance_next_vertice -= velocity * self.env.dt 
             else:
-                self.velocity = self.action()
+                self.velocity, self.nextOri = self.action_path()
                 self.move(self.velocity)
         else:
             self.env.robot_finihsed_set.add(self)
         
+    
+    def step(self):
+        # API for control robot in low_level
+        # velocity, self.nextOri, self.backOri = Action()
+        # self.move(velocity)
+        pass
+    
     
     def move(self, velocity):
         self.afterDis = velocity * self.env.dt - self.distance_next_vertice
         self.backDis = self.distance_last_vertice + velocity * self.env.dt
         self.velocity = velocity
         if self.afterDis >= 0:
-            self.turnFlag = True
-            self.turn(self.afterDis)
-            self.passed_edge_num += 1
+            self.turn(self.afterDis, self.nextOri)
         elif self.backDis <= 0:
-            self.turnBack() # 后退转向
+            self.turnBack(self.afterDis, self.backOri) # 后退转向
         else:
             position = self.position.copy()
-            self.position = self.update_position(position, velocity * self.env.dt)
+            self.position = self.update_position(position, velocity * self.env.dt, self.orientation)
             self.distance_last_vertice += velocity * self.env.dt
             self.distance_next_vertice -= velocity * self.env.dt        
     
-    def update_position(self, position, move_dis):
-        if self.orientation[0] == 1:
+    def update_position(self, position, move_dis, orientation):
+        if orientation[0] == 1:
             position[0] += move_dis
-        elif self.orientation[1] == 1:
+        elif orientation[1] == 1:
             position[0] -= move_dis
-        elif self.orientation[2] == 1:
+        elif orientation[2] == 1:
             position[1] += move_dis
-        elif self.orientation[3] == 1:
+        elif orientation[3] == 1:
             position[1] -= move_dis
-        elif self.orientation[4] == 1:
+        elif orientation[4] == 1:
             position[2] += move_dis
-        elif self.orientation[5] == 1:
+        elif orientation[5] == 1:
             position[2] -= move_dis
         return position
             
-    def turn(self, distance):
+    def turn(self, distance, orientation):
         # data in self.next_vertice.neighbor could be choosen to turn
-        self.orientation = self.nextOri
+        self.orientation = orientation
         
         self.last_vertice = self.next_vertice
         position = self.last_vertice.position.copy()
-        self.position = self.update_position(position, distance)
+        self.position = self.update_position(position, distance, self.orientation)
         
         self.distance_last_vertice = distance    
         
@@ -142,9 +150,33 @@ class Robot():
                 self.edge = edge
                 break
         self.distance_next_vertice = self.edge.length - self.distance_last_vertice
+
+        self.passed_edge_num += 1
     
-    def turnBack(self):
-        pass
+    def turnBack(self, distance, orientation):
+        self.orientation = orientation
+        
+        self.next_vertice = self.last_vertice
+        
+        position = self.next_vertice.position.copy()
+        
+        backOrientation = self.reverse_orientation(self.orientation)        
+        self.position = self.update_position(position, distance, backOrientation)
+        
+        self.distance_next_vertice = distance    
+        
+        for item in self.next_vertice.neighbors:
+            if self.cal_orientation(item.position, self.next_vertice.position) == self.orientation:
+                self.last_vertice = item
+                break        
+        for edge in self.env.edges:
+            if np.array_equal(self.last_vertice.position, edge.v1.position) and np.array_equal(self.next_vertice.position, edge.v2.position):
+                self.edge = edge
+                break
+            elif np.array_equal(self.next_vertice.position, edge.v2.position) and np.array_equal(self.last_vertice.position, edge.v1.position):
+                self.edge = edge
+                break
+        self.distance_last_vertice = self.edge.length - self.distance_next_vertice
         
     def check_collision(self):
         pass
@@ -171,11 +203,23 @@ class Robot():
         elif result == 5:
             Ori = [0, 0, 0, 0, 0, 1]
         return Ori
+        
+    def reverse_orientation(self, orientation):
+        Ori = [0, 0, 0, 0, 0, 0]
+        if orientation[0] == 1:
+            Ori = [0, 1, 0, 0, 0, 0]
+        elif orientation[1] == 1:
+            Ori = [1, 0, 0, 0, 0, 0]
+        elif orientation[2] == 1:
+            Ori = [0, 0, 0, 1, 0, 0]    
+        elif orientation[3] == 1:
+            Ori = [0, 0, 1, 0, 0, 0]
+        elif orientation[4] == 1:
+            Ori = [0, 0, 0, 0, 0, 1]
+        elif orientation[5] == 1:
+            Ori = [0, 0, 0, 0, 1, 0]
+        return Ori
     
-    def action(self):
-        velocity = 0.2
-        next_edge_pos1, next_edge_pos2 = self.path[self.passed_edge_num + 1][0], self.path[self.passed_edge_num + 1][1]
-        self.nextOri = self.cal_orientation(next_edge_pos1, next_edge_pos2)   
-        return velocity
+    
     
     
