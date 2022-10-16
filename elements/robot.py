@@ -110,7 +110,7 @@ class Robot():
 
     def get_neighbor_robots(self):
         result = []
-        for robot in env.robots:
+        for robot in self.env.robots:
             # judge whether a robot is its neighbor
             # update result
             pass
@@ -205,7 +205,7 @@ class Robot():
         self.distance_last_vertice = self.edge.length - self.distance_next_vertice
         
     def check_collision(self):
-        for robot in env.robots:
+        for robot in self.env.robots:
             # cal distance
             if distance < 0.2:
                 return True
