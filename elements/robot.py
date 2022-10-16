@@ -27,6 +27,10 @@ class Robot():
         self.allocated = False
         self.finished = False
         self.reward = 0
+        self.neighbor_robots = None
+        
+        self.edge_passed = set()
+        self.edge_not_passed = set()        
         self.reset()
         
     def reset(self):
@@ -40,6 +44,9 @@ class Robot():
         self.orientation = self.init_orientation
         self.velocity = 0.
         self.reward = 0
+        self.edge_passed = set()
+        self.edge_not_passed = self.env.all_edges
+        self.neighbor_robots = None
         
     def assign_path(self, path):
         self.path = path
@@ -92,18 +99,37 @@ class Robot():
             self.env.robot_finihsed_set.add(self)
         
     
-    def step(self):
+    def step(self, action):
         # API for control robot in low_level
-        # velocity, self.nextOri, self.backOri = Action()
-        # self.move(velocity)
-        pass
-    
+        velocity, self.nextOri, self.backOri = action[0], action[1], action[2]
+        self.move(velocity)
+        self.neighbor_robots = self.get_neighbor_robots()
+        # check_collision
+        collision = self.check_collision()
+        # get reward
+
+    def get_neighbor_robots(self):
+        result = []
+        for robot in env.robots:
+            # judge whether a robot is its neighbor
+            # update result
+            pass
+        
+        
+    def communicate(self, neighbor_robots):
+        # communicate, update self.edge_passed
+        
+        
+        self.edge_not_passed -= self.edge_passed
+        
     
     def move(self, velocity):
         self.afterDis = velocity * self.env.dt - self.distance_next_vertice
         self.backDis = self.distance_last_vertice + velocity * self.env.dt
         self.velocity = velocity
         if self.afterDis >= 0:
+            self.edge_passed.add(self.edge)
+            # self.edge_not_passed.remove(self.edge)            
             self.turn(self.afterDis, self.nextOri)
         elif self.backDis <= 0:
             self.turnBack(self.afterDis, self.backOri) # 后退转向
@@ -179,7 +205,11 @@ class Robot():
         self.distance_last_vertice = self.edge.length - self.distance_next_vertice
         
     def check_collision(self):
-        pass
+        for robot in env.robots:
+            # cal distance
+            if distance < 0.2:
+                return True
+        return False
     
     def cal_orientation(self, pos1, pos2):
         # pos2 相对于 pos1 的方向

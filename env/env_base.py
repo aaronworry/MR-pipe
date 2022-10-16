@@ -50,6 +50,10 @@ class Env():
         self.nodes = []
         self.edges = []
         
+        self.edge_passed = set()
+        self.edge_not_passed = set()
+        self.all_edges = set()
+        
         self.plot = None
         if dim == 3:
             self.plot = env_viewer_3D(self)
@@ -80,6 +84,7 @@ class Env():
                     if flag1 is not None and flag2 is not None:
                         edge = Edge(flag1, flag2)
                         self.edges.append(edge)
+                        self.all_edges.add(edge)
                         break
         # 可视化界面加载
         self.plot.init_viewer()
@@ -120,16 +125,37 @@ class Env():
         for robot in self.robots:
             robot.reset()
         self.robot_finihsed_set = set()
+        self.edge_passed = set()
+        self.edge_not_passed = self.all_edges
         
-    def step(self):
+    def step_path(self):
         for robot in self.robots:
             robot.step_path()
-            self.reward += robot.reward
+        self.render()
+    
+    def step(self, actions):
+        for i in range(len(self.robots)):
+            self.robots[i].step(actions[i])
+        
+        self.communication()  # update robot.edge_passed 
+        
+        for robot in self.robots:
+            self.edge_passed = self.edge_passed | robot.edge_passed
+            self.edge_not_passed = self.edge_not_passed & robot.edge_not_passed
+        # self.edge_not_passed = self.all_edges - self.edge_passed
         self.render()
         
+    def observation(self):
+        pass
         
+    def get_reward_and_termination(self):
+        pass
+    
+    def communication(self):
+        for robot in self.robot:
+            robot.communicate(robot.neighbor_robots)
+    
     def render(self):
-        
         self.plot.com_cla()  
         self.plot.drawRobots(self.robots)
         self.plot.show()
@@ -159,7 +185,7 @@ if __name__ == '__main__':
     # paths = 
     # env.path_planning(paths)
     ROBOT = [np.array([0., -1., 0.]), np.array([0., -2., 0.])]
-    """
+    
     alg = ExhaustiveAlgorithm(env.graph, ROBOT)
     alg.calculate_avaliable_solution()
     walks = alg.find_optimize_solution()    
@@ -167,14 +193,14 @@ if __name__ == '__main__':
     alg = HeuristicAlgorithm(env.graph, ROBOT)
     walks = alg.my_algorithm()
     walks = env.graph.trans_paths(walks)
-    
+    """
     result = env.graph.generate_position_of_path(walks)
     env.path_planning(result)
     
     time.sleep(1)
     # 机器人运动
     while not len(env.robot_finihsed_set) == env.robot_num:
-        env.step()
+        env.step_path()
     '''
     for i in range(300):
 
