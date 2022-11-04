@@ -12,6 +12,8 @@ class HeuristicAlgorithm():
         self.Graph = graph
         self.__edges = None
         self.__sorted_edges = []
+        self.found = []
+        self.aspect_found = {}
         self.paths = {}
         self.get_start_ids(ROBOT)
         self.k = len(ROBOT)
@@ -25,6 +27,7 @@ class HeuristicAlgorithm():
                     if self.Graph.graph.vs[i]['id'] not in start_ids:
                         start_ids[self.Graph.graph.vs[i]['id']] = 1
                         self.paths[self.Graph.graph.vs[i]['id']] = []
+                        self.aspect_found[self.Graph.graph.vs[i]['id']] = []
                     else:
                         start_ids[self.Graph.graph.vs[i]['id']] += 1 
         self.start_ids = start_ids
@@ -114,11 +117,12 @@ class HeuristicAlgorithm():
 
     
     def merge_walks(self):
-        result = self.find_combinations()
+        self.find_combinations()
+        print(self.found)
         
         R, maxL, totalL = None, sys.maxsize, sys.maxsize
         
-        for path_comb in result:
+        for path_comb in self.found:
             edge_assigned_list = self.assign_edges(path_comb)
             # 统计未经过的edge，将edge分配给这些组合，edge离哪条路径最近，就分配给哪条, 并由小到大排序
             updated_path = self.update_paths(path_comb, edge_assigned_list)
@@ -226,31 +230,29 @@ class HeuristicAlgorithm():
                 
 
     def find_combinations(self):
-        result = []
-        aspect_result = []
+        item_list = []
         for item in self.start_ids:
-            aspect_temp = []
             print(self.paths[item], self.start_ids[item])
             print("--------")
-            self.aspect_comb(self.paths[item], self.start_ids[item], aspect_temp, [], 0)
-            aspect_result.append(aspect_temp)          #aspect_temp:  [   [{}, {}]    [{}, {}]       ]
-        self.global_comb(aspect_result, [], 0)
+            item_list.append(item)
+            self.aspect_comb(item, self.paths[item], self.start_ids[item], [], 0)         #aspect_found:  {item1: [ [{}, {}], [{}, {}]], }
+        self.global_comb(self.aspect_found, [], 0)
         # result = [ [{}, {}, {}],  [{}, {}, {}],   [{}, {}, {}]      ]
-        return result
+        return True
     
-    def global_comb(self, A, out=[], i=0):        
+    def global_comb(self, A, out=[], i=0, item_list):        
         if i >= len(A):
-            result.append(out)
+            self.found.append(out)
             return        
-        for j in range(len(A[i])):
-            self.global_comb(A, out.extend(A[i][j]), i + 1)
+        for j in range(len(A[item_list[i]])):
+            self.global_comb(A, out.extend(A[item_list[i]][j]), i + 1)
         
-    def aspect_comb(self, A, k, aspect_temp, out=[], i=0):
+    def aspect_comb(self, item, A, k, aspect_temp, out=[], i=0):
         # k <= len(A) - i
         if len(A) == 0 or k > len(A):
             return
         if k == 0:
-            aspect_temp.append(out)
+            self.aspect_found[item].append(out)
             return
         for j in range(i, len(A)):
             # add current element `A[j]` to the solution and recur for next index
