@@ -188,6 +188,7 @@ class WeightGraph():
             cache = item['path'].copy()
             r = self.trans_path(cache)
             result.append({'path':r})
+        print(result)
         return result
 
     def trans_path(self, path):
@@ -200,8 +201,8 @@ class WeightGraph():
             if b in self.graph.vs[a]['neighbor']:
                 result.append(b)
             else:
-                path_temp = self.get_shortest_path(self, a, b)
-                temp = path_temp[1:]
+                path_temp = self.get_shortest_path(a, b)
+                temp = path_temp[0][1:]                
                 result.extend(temp)
             flag += 1
         return result

@@ -13,6 +13,7 @@ class HeuristicAlgorithm():
         self.__edges = None
         self.__sorted_edges = []
         self.found = []
+        self.update_found = []
         self.aspect_found = {}
         self.paths = {}
         self.get_start_ids(ROBOT)
@@ -118,56 +119,61 @@ class HeuristicAlgorithm():
     
     def merge_walks(self):
         self.find_combinations()
-        print(self.found)
         
-        R, maxL, totalL = None, sys.maxsize, sys.maxsize
-        
-        for path_comb in self.found:
+        R_id, maxL, totalL = None, sys.maxsize, sys.maxsize
+        for index, path_comb in enumerate(self.found):
             edge_assigned_list = self.assign_edges(path_comb)
             # 统计未经过的edge，将edge分配给这些组合，edge离哪条路径最近，就分配给哪条, 并由小到大排序
-            updated_path = self.update_paths(path_comb, edge_assigned_list)
+            self.update_paths(path_comb, edge_assigned_list)
             # 对于每个路径，按被分配edge离路径的距离从小到大的顺序添加edge到该路径中，添加一个edge, 则更新一次路径
             
             # 对于每条路径，记录里面的重复的子路径，找到最短的子路径进行替换
+        # print("++++", self.update_found)
+        for index, path_list in enumerate(self.update_found):
             total_length, max_length = 0, 0
-            for path in updated_path:
+            for path in path_list:
                 total_length += path['length']
                 if max_length <= path['length']:
                     max_length = path['length']
             # 计算路径总长度以及最大路径长度
-            if maxL > max_length:
+            if max_length <= maxL:
                 maxL = max_length
-                R = updated_path
+                R_id = index
             # 选最大的长度最小的
-            return R
+        # print(self.update_found[R_id])
+        return self.update_found[R_id]
 
     
     def update_paths(self, path_comb, edge_assigned_list):
         # path_comb [{}, {}, {}]   edge_assigned_list    [[{}, {}, {}], [{}, {}, {}], [{}, {}, {}]]
-        n = len(path_comb)
-        for i in range(n):
-            initial_path = path_comb[i]['path'].copy()
+        update_path_list = []
+        for i, value in enumerate(path_comb):
+            initial_path = value['path'].copy()
             for edge in edge_assigned_list[i]:   # {}
                 # edge['edge'] = [a, b]        edge['edge_id'] = a 或 b      edge['id'] = q
-                _, edge_temp, id_temp = self.cal_edge_path_distance(initial_path, edge)
+                _, edge_temp, id_temp = self.cal_edge_path_distance(initial_path, edge['edge'])
                 insert_path = self.Graph.simpleGraph.get_shortest_paths(id_temp, to=edge_temp, weights=self.Graph.simpleGraph.es["weight"], output="vpath",)[0]
                 path_temp2 = insert_path.copy()
                 path_temp2.reverse()
                 path_one = edge['edge'][0] if edge['edge'][1] == edge_temp else edge['edge'][1]
                 insert_path.extend([path_one])
-                insert_path.extend([path_temp2])
-                for i, idx in enumerate(initial_path):
+                insert_path.extend(path_temp2)
+                for index, idx in enumerate(initial_path):
                     if idx == edge['id']:
-                        a = initial_path[:i]
-                        b = initial_path[i+1:]
+                        a = initial_path[:index]
+                        b = initial_path[index+1:]
                         a.extend(insert_path)
                         a.extend(b)
                         initial_path = a
                         break
-            path_comb[i]['path'] = initial_path
-            path_comb[i]['length'] = self.get_walk_length(initial_path)
-            path_comb[i]['count'] = len(initial_path)
-        return path_comb
+            temp = {}
+            temp['path'] = initial_path
+            temp['length'] = self.get_walk_length(initial_path)
+            temp['count'] = len(initial_path)
+            update_path_list.append(temp)
+        self.update_found.append(update_path_list)
+            
+        # return path_comb_temp
 
                     
 
@@ -178,86 +184,86 @@ class HeuristicAlgorithm():
         for item in path_comb:
             path = item['path']
             for i in range(len(path)-1):
-                if (path[i], path[i+1]) in edge_dict:
-                    edge_dict[(path[i], path[i+1])] += 1
-                elif (path[i+1], path[i]) in edge_dict:
-                    edge_dict[(path[i+1], path[i])] += 1
+                if str([path[i], path[i+1]]) in edge_dict:
+                    edge_dict[str([path[i], path[i+1]])] += 1
+                elif str([path[i+1], path[i]]) in edge_dict:
+                    edge_dict[str([path[i+1], path[i]])] += 1
                 else:
-                    edge_dict[(path[i], path[i+1])] = 1
+                    edge_dict[str([path[i], path[i+1]])] = 1
         for item in self.graph:
-            if tuple((item[0], item[1])) in edge_dict or tuple((item[1], item[0])) in edge_dict:
+            if str([item[0], item[1]]) in edge_dict or str([item[1], item[0]]) in edge_dict:
                 continue
             else:
                 unreached_edge.append(item)
         
-        assign_edges = [[]] * len(path_comb)              #  [  [{}, {}, {}],   [],  [] ]
+        assign_edges_list = []              #  [  [{}, {}, {}],   [],  [] ]
+        for item in path_comb:
+            assign_edges_list.append([])
         for edge in unreached_edge:
-            distance, edge_flag, id_flag = sys.maxsize, None, 0
-            assign_id = 0
-            for i in range(len(path_comb)):
-                dist_temp, edge_temp, id_temp = self.cal_edge_path_distance(path_comb[i]['path'], edge)
+            distance, edge_flag, id_flag = sys.maxsize, None, None
+            assign_id = sys.maxsize
+            for i, value in enumerate(path_comb):
+                dist_temp, edge_temp, id_temp = self.cal_edge_path_distance(value.get('path'), edge)
                 if dist_temp < distance:
                     distance, edge_flag, id_flag = dist_temp, edge_temp, id_temp
                     assign_id = i
-            assign_edges[assign_id].append({'edge':edge, 'dis':distance, 'edge_id':edge_flag, 'id':id_temp})
-        for i in range(len(assign_edges)):
-            assign_edges[i] = sorted(assign_edges[i], key=itemgetter('dis'))
-        return assign_edges
+            assign_edges_list[assign_id].append({'edge':edge, 'dis':distance, 'edge_id':edge_flag, 'id':id_flag})
+        for i in range(len(assign_edges_list)):
+            assign_edges_list[i] = sorted(assign_edges_list[i], key=itemgetter('dis'))
+        return assign_edges_list
         
-    def cal_edge_path_distance(self, path, edge):
-        if edge[0] in path:
-            return 0, edge[0], edge[0]
-        elif edge[1] in path:
-            return 0, edge[1], edge[1]
+    def cal_edge_path_distance(self, path_list, edge_temp):
+        if edge_temp[0] in path_list:
+            return 0, edge_temp[0], edge_temp[0]
+        elif edge_temp[1] in path_list:
+            return 0, edge_temp[1], edge_temp[1]
         else:
             result = sys.maxsize
-            id_temp = 0
-            edge_temp = None
-            for idx in path:
-                path_temp1 = self.Graph.simpleGraph.get_shortest_paths(idx, to=edge[0], weights=self.Graph.simpleGraph.es["weight"], output="vpath",)[0]
-                path_temp2 = self.Graph.simpleGraph.get_shortest_paths(idx, to=edge[1], weights=self.Graph.simpleGraph.es["weight"], output="vpath",)[0]
+            result_id = 0
+            result_edge = None
+            for idx in path_list:
+                path_temp1 = self.Graph.simpleGraph.get_shortest_paths(idx, to=edge_temp[0], weights=self.Graph.simpleGraph.es["weight"], output="vpath",)[0]
+                path_temp2 = self.Graph.simpleGraph.get_shortest_paths(idx, to=edge_temp[1], weights=self.Graph.simpleGraph.es["weight"], output="vpath",)[0]
                 dist1 = self.Graph.get_length_simple_graph(path_temp1)
                 dist2 = self.Graph.get_length_simple_graph(path_temp2)
                 if min(dist1, dist2) < result:
-                    id_temp = idx
+                    result_id = idx
                     if dist1 < dist2:
                         result = dist1
-                        edge_temp = edge[0]
+                        result_edge = edge_temp[0]
                     else:    
                         result = dist2
-                        edge_temp = edge[1]
-            return result, edge_temp, id_temp
+                        result_edge = edge_temp[1]
+            return result, result_edge, result_id
                 
 
     def find_combinations(self):
         item_list = []
         for item in self.start_ids:
-            print(self.paths[item], self.start_ids[item])
-            print("--------")
             item_list.append(item)
-            self.aspect_comb(item, self.paths[item], self.start_ids[item], [], 0)         #aspect_found:  {item1: [ [{}, {}], [{}, {}]], }
-        self.global_comb(self.aspect_found, [], 0)
+            self.aspect_comb(item, self.paths[item], self.start_ids[item], (), 0)         #aspect_found:  {item1: [ [{}, {}], [{}, {}]], }
+        self.global_comb(self.aspect_found, item_list, (), 0)
         # result = [ [{}, {}, {}],  [{}, {}, {}],   [{}, {}, {}]      ]
         return True
     
-    def global_comb(self, A, out=[], i=0, item_list):        
+    def global_comb(self, A, item_list, out=(), i=0):        
         if i >= len(A):
-            self.found.append(out)
+            self.found.append(list(out))
             return        
         for j in range(len(A[item_list[i]])):
-            self.global_comb(A, out.extend(A[item_list[i]][j]), i + 1)
+            self.global_comb(A, item_list, out + (A[item_list[i]][j][0], ), i + 1)
         
-    def aspect_comb(self, item, A, k, aspect_temp, out=[], i=0):
+    def aspect_comb(self, item, A, k, out=(), i=0):
         # k <= len(A) - i
         if len(A) == 0 or k > len(A):
             return
         if k == 0:
-            self.aspect_found[item].append(out)
+            self.aspect_found[item].append(list(out))
             return
         for j in range(i, len(A)):
             # add current element `A[j]` to the solution and recur for next index
             # `j+1` with one less element `k-1`
-            self.aspect_comb(A, k - 1, aspect_temp, out.extend([A[j]]), j + 1)
+            self.aspect_comb(item, A, k - 1, out + (A[j], ), j + 1)
 
     def sub_list_exists(self, list1, list2):
         if len(list2) < 2:

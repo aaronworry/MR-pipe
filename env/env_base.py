@@ -185,7 +185,7 @@ if __name__ == '__main__':
     # paths = 
     # env.path_planning(paths)
     ROBOT = [np.array([0., -1., 0.]), np.array([0., -2., 0.])]
-    
+    """
     alg = ExhaustiveAlgorithm(env.graph, ROBOT)
     alg.calculate_avaliable_solution()
     walks = alg.find_optimize_solution()    
@@ -193,7 +193,7 @@ if __name__ == '__main__':
     alg = HeuristicAlgorithm(env.graph, ROBOT)
     walks = alg.my_algorithm()
     walks = env.graph.trans_paths(walks)
-    """
+    
     result = env.graph.generate_position_of_path(walks)
     env.path_planning(result)
     
