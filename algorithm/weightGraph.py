@@ -5,7 +5,6 @@ import numpy as np
 class WeightGraph():
     def __init__(self, env_vertices, env_edges):
         self.graph = None
-        self.simpleGraph = None
         self.__r_edges = []
         self.__is1degree = False
         self.degree1 = []     # 度为1的顶点
@@ -15,7 +14,6 @@ class WeightGraph():
         self.env_vertices = env_vertices
         self.env_edges = env_edges
         self.generate_graph()
-        self.simple_the_graph()
 
     def generate_graph(self):
         self.graph = Graph()
@@ -79,41 +77,6 @@ class WeightGraph():
             else:
                 self.degree34.append(i)
 
-
-    def simple_the_graph(self):
-        self.simpleGraph = Graph()
-        
-        """
-        num = len(self.degree1) + len(self.degree34)
-        self.simpleGraph.add_vertices(num)
-        for i in range(num):
-            if i < len(self.degree1):
-                self.simpleGraph.vs[i]['id'] = self.degree1[i]
-            else:
-                self.simpleGraph.vs[i]['id'] = self.degree34[i - len(self.degree1)]
-        """
-        num = len(self.degree1) + len(self.degree34) + len(self.degree2)
-        self.simpleGraph.add_vertices(num)
-        for i in range(num):
-            self.simpleGraph.vs[i]["id"] = self.graph.vs[i]["id"]
-            self.simpleGraph.vs[i]["position"] = self.graph.vs[i]["position"]
-        
-        edges_temp = []
-        for edge in self.graph.get_edgelist():
-            if edge[0] not in self.degree2 and edge[1] not in self.degree2:
-                edges_temp.append(list(edge))
-        weights = [1] * len(edges_temp)
-        id_pass = []
-        for idx in self.degree2:
-            if idx not in id_pass:
-                edge_last, id_list, length = self.find_path(idx)
-                edges_temp.append(edge_last)
-                weights.extend([length])
-                id_pass.extend(id_list)
-        self.simpleGraph.add_edges(edges_temp)        
-        self.simpleGraph.es['weight'] = weights
-        self.simpleGraph.es['label'] = weights
-        self.simpleGraph.es["curved"] = False
         
         
                 
@@ -182,6 +145,7 @@ class WeightGraph():
             position_paths.append(edge_list)        
         return position_paths
 
+    """
     def trans_paths(self, paths):
         result = []
         for item in paths:
@@ -206,7 +170,7 @@ class WeightGraph():
                 result.extend(temp)
             flag += 1
         return result
-        
+    """    
 
 
     def get_edges(self):
@@ -247,19 +211,19 @@ class WeightGraph():
             print("shortest path is empty")
             return 0
             
-    def get_length_simple_graph(self, path):
+    def get_length_graph(self, path):
         if len(path) > 0:
             # Add up the weights across all edges on the shortest path
             distance = 0
             n = len(path)
             for i in range(n-1):
                 mytuple = (path[i], path[i + 1])
-                if mytuple in self.simpleGraph.get_edgelist():
-                    distance += self.get_weight_by_index(self.simpleGraph.get_edgelist().index(mytuple))
+                if mytuple in self.graph.get_edgelist():
+                    distance += self.get_weight_by_index(self.graph.get_edgelist().index(mytuple))
                 else:
                     mytuple = (path[i+1], path[i])
-                    if mytuple in self.simpleGraph.get_edgelist():
-                        distance += self.get_weight_by_index(self.simpleGraph.get_edgelist().index(mytuple))
+                    if mytuple in self.graph.get_edgelist():
+                        distance += self.get_weight_by_index(self.graph.get_edgelist().index(mytuple))
                     else:
                         print("--------------------ERROR")
                         break

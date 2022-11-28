@@ -16,9 +16,9 @@ class HeuristicAlgorithm():
         self.update_found = []
         self.aspect_found = {}
         self.paths = {}
+        self.result = []
         self.get_start_ids(ROBOT)
         self.k = len(ROBOT)
-        self.graph = [list(elem) for elem in self.Graph.simpleGraph.get_edgelist()]
         
     def get_start_ids(self, ROBOT):
         start_ids = {}
@@ -36,11 +36,11 @@ class HeuristicAlgorithm():
     def my_algorithm(self):
         self.sort_edges_descending()
         self.create_paths()
-        return self.paths
+        return self.result
 
     def sort_edges_descending(self):
-        weights = self.Graph.simpleGraph.es['weight']
-        edges = self.Graph.simpleGraph.get_edgelist()
+        weights = self.Graph.graph.es['weight']
+        edges = self.Graph.graph.get_edgelist()
         self.__edges = edges
         n = len(weights)
         for i in range(n):
@@ -76,31 +76,67 @@ class HeuristicAlgorithm():
         return False
 
     def create_paths(self):
+        """
         for e in self.__sorted_edges:
             path_temp = [e['start_node'], e['end_node']]
             for item in self.start_ids:
                 walk = []
                 if not self.check_added(path_temp, self.paths[item]):
-                    path1 = self.Graph.simpleGraph.get_shortest_paths(item, to=path_temp[0], weights=self.Graph.simpleGraph.es["weight"], output="vpath",)[0]
+                    path1 = self.Graph.graph.get_shortest_paths(item, to=path_temp[0], weights=self.Graph.graph.es["weight"], output="vpath",)[0]
+                    path2 = None
+                    distance = sys.maxsize
                     for goal in self.Graph.degree1:
-                        path2 = None
-                        distance = sys.maxsize
                         if goal != item:
-                            path = self.Graph.simpleGraph.get_shortest_paths(path_temp[1], to=goal, weights=self.Graph.simpleGraph.es["weight"], output="vpath",)[0]
-                            temp = self.Graph.get_length_simple_graph(path)
+                            path = self.Graph.graph.get_shortest_paths(path_temp[1], to=goal, weights=self.Graph.graph.es["weight"], output="vpath",)[0]
+                            temp = self.Graph.get_length_graph(path)
                             if temp < distance:
                                 path2 = path
                                 distance = temp
                     self.try_to_merge(path1, path2, walk)   
-                    self.paths[item].append(
-                        {'path': walk, 'length': self.get_walk_length(walk), 'count': len(walk)})
+                    self.paths[item].append({'path': walk, 'length': self.get_walk_length(walk), 'count': len(walk)})
+        """            
+        for item in self.start_ids:
+            for e in self.__sorted_edges:
+                path_temp = [e['start_node'], e['end_node']]
+                if not self.check_added(path_temp, self.paths[item]):
+                    walk = []
+                    path1 = self.Graph.graph.get_shortest_paths(item, to=path_temp[0], weights=self.Graph.graph.es["weight"], output="vpath",)[0]
+                    path2, distance = None, sys.maxsize
+                    for goal in self.Graph.degree1:
+                        path = self.Graph.graph.get_shortest_paths(path_temp[1], to=goal, weights=self.Graph.graph.es["weight"], output="vpath",)[0]
+                        temp = self.Graph.get_length_graph(path)
+                        if temp <= distance:
+                            path2 = path
+                            distance = temp
+                    self.try_to_merge(path1, path2, walk)
+                    path_temp1 = {'path': walk, 'length': self.get_walk_length(walk), 'count': len(walk)}
+                    
+                    walk = []
+                    path1 = self.Graph.graph.get_shortest_paths(item, to=path_temp[1], weights=self.Graph.graph.es["weight"], output="vpath",)[0]
+                    path2, distance = None, sys.maxsize
+                    for goal in self.Graph.degree1:
+                        path = self.Graph.graph.get_shortest_paths(path_temp[0], to=goal, weights=self.Graph.graph.es["weight"], output="vpath",)[0]
+                        temp = self.Graph.get_length_graph(path)
+                        if temp <= distance:
+                            path2 = path
+                            distance = temp
+                    self.try_to_merge(path1, path2, walk)
+                    path_temp2 = {'path': walk, 'length': self.get_walk_length(walk), 'count': len(walk)}
+                    
+                    
+                    if path_temp1['length'] <= path_temp2['length']:
+                        self.paths[item].append(path_temp1)
+                    else:
+                        self.paths[item].append(path_temp2)
+        
         for item in self.paths:
             self.paths[item] = sorted(self.paths[item], key=itemgetter('length'), reverse=True)   # 降序
         for i in self.start_ids:
             if self.start_ids[i] > len(self.paths[i]):
                 self.add_dummy_tours(i, self.start_ids[i] - len(self.paths[i]))
-        result = self.merge_walks()   # [{}, {}, {}, ...]        
-        self.paths = result
+        result = self.merge_walks()   # [{}, {}, {}, ...] 
+        print(result)
+        self.result = result
 
     def check_added(self, edge, paths):
         for e in paths:
@@ -119,7 +155,6 @@ class HeuristicAlgorithm():
     
     def merge_walks(self):
         self.find_combinations()
-        
         R_id, maxL, totalL = None, sys.maxsize, sys.maxsize
         for index, path_comb in enumerate(self.found):
             edge_assigned_list = self.assign_edges(path_comb)
@@ -151,15 +186,15 @@ class HeuristicAlgorithm():
             initial_path = value['path'].copy()
             for edge in edge_assigned_list[i]:   # {}
                 # edge['edge'] = [a, b]        edge['edge_id'] = a 或 b      edge['id'] = q
-                _, edge_temp, id_temp = self.cal_edge_path_distance(initial_path, edge['edge'])
-                insert_path = self.Graph.simpleGraph.get_shortest_paths(id_temp, to=edge_temp, weights=self.Graph.simpleGraph.es["weight"], output="vpath",)[0]
+                dist_temp, edge_temp, id_temp = self.cal_edge_path_distance(initial_path, edge['edge'])
+                insert_path = self.Graph.graph.get_shortest_paths(id_temp, to=edge_temp, weights=self.Graph.graph.es["weight"], output="vpath",)[0]
                 path_temp2 = insert_path.copy()
                 path_temp2.reverse()
                 path_one = edge['edge'][0] if edge['edge'][1] == edge_temp else edge['edge'][1]
                 insert_path.extend([path_one])
                 insert_path.extend(path_temp2)
                 for index, idx in enumerate(initial_path):
-                    if idx == edge['id']:
+                    if idx == id_temp:
                         a = initial_path[:index]
                         b = initial_path[index+1:]
                         a.extend(insert_path)
@@ -171,11 +206,8 @@ class HeuristicAlgorithm():
             temp['length'] = self.get_walk_length(initial_path)
             temp['count'] = len(initial_path)
             update_path_list.append(temp)
-        self.update_found.append(update_path_list)
-            
+        self.update_found.append(update_path_list)            
         # return path_comb_temp
-
-                    
 
     def assign_edges(self, path_comb):
         # [{}, {}, {}]
@@ -190,7 +222,7 @@ class HeuristicAlgorithm():
                     edge_dict[str([path[i+1], path[i]])] += 1
                 else:
                     edge_dict[str([path[i], path[i+1]])] = 1
-        for item in self.graph:
+        for item in self.__edges:
             if str([item[0], item[1]]) in edge_dict or str([item[1], item[0]]) in edge_dict:
                 continue
             else:
@@ -222,10 +254,10 @@ class HeuristicAlgorithm():
             result_id = 0
             result_edge = None
             for idx in path_list:
-                path_temp1 = self.Graph.simpleGraph.get_shortest_paths(idx, to=edge_temp[0], weights=self.Graph.simpleGraph.es["weight"], output="vpath",)[0]
-                path_temp2 = self.Graph.simpleGraph.get_shortest_paths(idx, to=edge_temp[1], weights=self.Graph.simpleGraph.es["weight"], output="vpath",)[0]
-                dist1 = self.Graph.get_length_simple_graph(path_temp1)
-                dist2 = self.Graph.get_length_simple_graph(path_temp2)
+                path_temp1 = self.Graph.graph.get_shortest_paths(idx, to=edge_temp[0], weights=self.Graph.graph.es["weight"], output="vpath",)[0]
+                path_temp2 = self.Graph.graph.get_shortest_paths(idx, to=edge_temp[1], weights=self.Graph.graph.es["weight"], output="vpath",)[0]
+                dist1 = self.Graph.get_length_graph(path_temp1)
+                dist2 = self.Graph.get_length_graph(path_temp2)
                 if min(dist1, dist2) < result:
                     result_id = idx
                     if dist1 < dist2:
