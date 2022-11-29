@@ -128,8 +128,7 @@ class Robot():
         self.backDis = self.distance_last_vertice + velocity * self.env.dt
         self.velocity = velocity
         if self.afterDis >= 0:
-            self.edge_passed.add(self.edge)
-            # self.edge_not_passed.remove(self.edge)            
+            self.edge_passed.add(self.edge)          
             self.turn(self.afterDis, self.nextOri)
         elif self.backDis <= 0:
             self.turnBack(self.afterDis, self.backOri) # 后退转向
@@ -176,7 +175,6 @@ class Robot():
                 self.edge = edge
                 break
         self.distance_next_vertice = self.edge.length - self.distance_last_vertice
-
         self.passed_edge_num += 1
     
     def turnBack(self, distance, orientation):

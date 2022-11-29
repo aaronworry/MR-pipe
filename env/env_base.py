@@ -189,7 +189,9 @@ if __name__ == '__main__':
     alg = HeuristicAlgorithm(env.graph, ROBOT)
     walks = alg.my_algorithm()
     
+    
     result = env.graph.generate_position_of_path(walks)
+    print(result)
     env.path_planning(result)
     
     time.sleep(1)

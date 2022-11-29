@@ -144,6 +144,12 @@ class WeightGraph():
                         break
             position_paths.append(edge_list)        
         return position_paths
+    
+    def get_position_of_node(self, path_id):
+        for i in range(self.node):
+            if self.graph.vs[i]['id'] == path_id:
+                return self.graph.vs[i]['position']
+        
 
     """
     def trans_paths(self, paths):

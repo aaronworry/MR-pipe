@@ -135,7 +135,6 @@ class HeuristicAlgorithm():
             if self.start_ids[i] > len(self.paths[i]):
                 self.add_dummy_tours(i, self.start_ids[i] - len(self.paths[i]))
         result = self.merge_walks()   # [{}, {}, {}, ...] 
-        print(result)
         self.result = result
 
     def check_added(self, edge, paths):
