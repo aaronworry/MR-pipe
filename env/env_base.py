@@ -102,10 +102,12 @@ class Env():
     def path_planning(self, paths):
         # task_allocation   为机器人分配路径, 并更新颜色
         for path in paths:
+            true_path = path['path']
+            start_position = self.graph.get_position_of_node(true_path[0])
             for robot in self.robots:
-                if np.array_equal(robot.position, path[0][0]) and robot.allocated == False:
-                    self.upgrade_edges(path, robot.color)
-                    robot.assign_path(path)
+                if np.array_equal(robot.position, start_position) and robot.allocated == False:
+                    # self.upgrade_edges(path, robot.color)
+                    robot.assign_path(true_path)
                     robot.allocated = True
                 
         # self.plot.upgrade_pipe_path()
@@ -190,9 +192,9 @@ if __name__ == '__main__':
     walks = alg.my_algorithm()
     
     
-    result = env.graph.generate_position_of_path(walks)
-    print(result)
-    env.path_planning(result)
+    # result = env.graph.generate_position_of_path(walks)
+    # print(result)
+    env.path_planning(walks)
     
     time.sleep(1)
     # 机器人运动

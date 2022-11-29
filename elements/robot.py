@@ -21,7 +21,7 @@ class Robot():
         self.next_vertice = None
         self.path = None
         
-        self.passed_edge_num = 0
+        self.path_for_obstacle_avoidance = None
 
         self.color = None
         self.allocated = False
@@ -57,10 +57,10 @@ class Robot():
         self.next_vertice = None
         
         for edge in self.env.edges:
-            if np.array_equal(path[0][0], edge.v1.position) and np.array_equal(path[0][1], edge.v2.position):
+            if np.array_equal(self.env.graph.get_position_of_node(path[0]), edge.v1.position) and np.array_equal(self.env.graph.get_position_of_node(path[1]), edge.v2.position):
                 self.edge = edge
                 break
-            elif np.array_equal(path[0][0], edge.v2.position) and np.array_equal(path[0][1], edge.v1.position):
+            elif np.array_equal(self.env.graph.get_position_of_node(path[0]), edge.v2.position) and np.array_equal(self.env.graph.get_position_of_node(path[1]), edge.v1.position):
                 self.edge = edge
                 break            
         self.distance_next_vertice = self.edge.length
@@ -72,16 +72,19 @@ class Robot():
         else:
             self.next_vertice = self.edge.v1
             self.last_vertice = self.edge.v2
+        
+        self.path = self.path[1:]
     
     def action_path(self):
         velocity = 0.2
-        next_edge_pos1, next_edge_pos2 = self.path[self.passed_edge_num + 1][0], self.path[self.passed_edge_num + 1][1]        
+        next_edge1, next_edge2 = self.path[0], self.path[1]
+        next_edge_pos1, next_edge_pos2 = self.env.graph.get_position_of_node(next_edge1), self.env.graph.get_position_of_node(next_edge2)       
         forward_orientation = self.cal_orientation(next_edge_pos1, next_edge_pos2)   
         return velocity, forward_orientation
     
     def step_path(self):
         if not self.finished:
-            if self.passed_edge_num == len(self.path) - 1:
+            if len(self.path) == 1:
                 velocity = 0.2
                 position = self.position.copy()
                 if velocity * self.env.dt - self.distance_next_vertice >= 0:
@@ -175,7 +178,7 @@ class Robot():
                 self.edge = edge
                 break
         self.distance_next_vertice = self.edge.length - self.distance_last_vertice
-        self.passed_edge_num += 1
+        self.path = self.path[1:]
     
     def turnBack(self, distance, orientation):
         self.orientation = orientation
