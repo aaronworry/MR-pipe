@@ -17,9 +17,9 @@ class ExhaustiveAlgorithm():
                 if node in self.start_ids:
                     self.findPaths([node])
         self.findCombinations(self.paths, self.k)
-        return self.found
         
     def find_optimize_solution(self):
+        self.calculate_avaliable_solution()
         walks = None
         minLen = sys.maxsize
         for e in self.found:

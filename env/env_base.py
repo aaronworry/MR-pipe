@@ -180,14 +180,10 @@ class Env():
         
 if __name__ == '__main__':
     env = Env(dt = 0.8, pipeDict = pipeDict2, dim=3)
-    
-    # 规划路径
-    # paths = 
-    # env.path_planning(paths)
+
     ROBOT = [np.array([0., -1., 0.]), np.array([0., -2., 0.])]
     """
     alg = ExhaustiveAlgorithm(env.graph, ROBOT)
-    alg.calculate_avaliable_solution()
     walks = alg.find_optimize_solution()    
     """
     alg = HeuristicAlgorithm(env.graph, ROBOT)
