@@ -283,19 +283,36 @@ class Robot():
                         # 度为 3 4 时
                         else:
                             if np.array_equal(self.env.graph.get_position_of_node(self.path[1]), self.last_vertice.position):
+                                # 自己需要回退
                                 print(6)
-                            elif self.distance_next_vertice <= robot.distance_next_vertice and np.array_equal(self.env.graph.get_position_of_node(robot.path[1]), self.last_vertice.position):
+                            elif self.distance_next_vertice <= robot.distance_next_vertice and np.array_equal(self.env.graph.get_position_of_node(self.path[1]), robot.last_vertice.position):
+                                # 我比对方更近，且我需要到对方的上一个节点
                                 self.conflict_resolution_forward_flag = True
                                 self.prior_robots.add(robot)
                                 self.collision_path_id = self.path[0]
-                                robot.collision_path_id = self.collision_path_id
-                            elif self.distance_next_vertice >= robot.distance_next_vertice and self.path[1] == robot.path[1]:
-                                self.conflict_resolution_forward_flag = True
-                                self.prior_robots.add(robot)
-                                self.collision_path_id = self.path[0]
-                                robot.collision_path_id = self.collision_path_id
+                                robot.collision_path_id = self.collision_path_id 
                             else:
                                 print(7)
+                            """
+                            elif self.path[1] == robot.path[1]:
+                                # 目的地相同
+                                if np.array_equal(self.env.graph.get_position_of_node(robot.path[1]), robot.last_vertice.position) and self.distance_next_vertice <= robot.distance_next_vertice:
+                                    # 我比它近，对方需要返回
+                                    self.conflict_resolution_forward_flag = True
+                                    self.prior_robots.add(robot)
+                                    self.collision_path_id = self.path[0]
+                                    robot.collision_path_id = self.collision_path_id
+                                else:
+                                    # 对方不需要回退, 我比他远
+                                    print(7) 
+                            elif self.distance_next_vertice <= robot.distance_next_vertice and np.array_equal(self.env.graph.get_position_of_node(self.path[1]), robot.last_vertice.position):
+                                # 我比对方更近，且我需要到对方的后面去
+                                self.conflict_resolution_forward_flag = True
+                                self.prior_robots.add(robot)
+                                self.collision_path_id = self.path[0]
+                                robot.collision_path_id = self.collision_path_id
+                            """
+                            
                     else:
                         print(8)
             
