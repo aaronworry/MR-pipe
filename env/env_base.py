@@ -53,6 +53,7 @@ class Env():
         self.edge_passed = set()
         self.edge_not_passed = set()
         self.all_edges = set()
+        self.collision_finished_robots = set()
         
         self.plot = None
         if dim == 3:
@@ -128,11 +129,23 @@ class Env():
             robot.reset()
         self.robot_finihsed_set = set()
         self.edge_passed = set()
+        self.collision_finished_robots = set()
         self.edge_not_passed = self.all_edges
         
     def step_path(self):
         for robot in self.robots:
-            robot.step_path()
+            # env 负责 prior 的减少，robot的path不包括 path_id时 且 prior 为空时， robot 告知env ，让env删掉其它机器人的prior的自己
+            robot.prior_robots -= self.collision_finished_robots
+        self.collision_finished_robots = set()
+        for robot in self.robots:
+            robot.collision_avoidance()
+        for robot in self.robots:
+            if robot.conflict_resolution_flag == True:
+                robot.step_avoidance_path()
+            elif robot.conflict_resolution_forward_flag == True:
+                robot.step_avoidance_forward_path()
+            else:
+                robot.step_path()
         self.render()
     
     def step(self, actions):

@@ -10,6 +10,7 @@ class WeightGraph():
         self.degree1 = []     # 度为1的顶点
         self.degree2 = []
         self.degree34 = []
+        self.degree134 = []
         self.node = 0
         self.env_vertices = env_vertices
         self.env_edges = env_edges
@@ -72,10 +73,12 @@ class WeightGraph():
                 graf = self.get_edges()
                 adj = self.get_adj(i,graf)
                 self.degree1.append(i)
+                self.degree134.append(i)
             elif degrees[i] == 2:
                 self.degree2.append(i)
             else:
                 self.degree34.append(i)
+                self.degree134.append(i)
 
         
         
