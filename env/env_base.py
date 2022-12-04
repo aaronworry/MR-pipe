@@ -13,6 +13,7 @@ from view.plot3D import env_viewer_3D
 from algorithm.weightGraph import WeightGraph
 from algorithm.exhaustiveAlgorithm import ExhaustiveAlgorithm
 from algorithm.heuristicAlgorithm import HeuristicAlgorithm
+from algorithm.exhaustiveSpaceToTime import ExhaustiveSpaceToTime
 
 vertices0 = np.array([[0., 0., 0.], [0., -1., 0.], [0., -2., 0.], [0., -3., 0.], [1., 0., 0.], [1., -3., 0.], [3., 0., 0.], [3., -3., 0.]])
 vertices1 = np.array([[0., 0., 1.], [0., -1., 1.], [0., -2., 1.], [0., -3., 1.], [1., 0., 1.], [1., -1., 1.], [1., -2., 1.], [1., -3., 1.]])
@@ -201,18 +202,35 @@ if __name__ == '__main__':
     alg = ExhaustiveAlgorithm(env.graph, ROBOT)
     walks = alg.find_optimize_solution()    
     """
+    """
     alg = HeuristicAlgorithm(env.graph, ROBOT)
     walks = alg.my_algorithm()
-    
-    
-    # result = env.graph.generate_position_of_path(walks)
-    # print(result)
-    env.path_planning(walks)
-    
+    """
+    alg = ExhaustiveSpaceToTime(env.graph, ROBOT)
+    alg.solve()
+    """
+    env.path_planning(walks)    
     time.sleep(1)
-    # 机器人运动
     while not len(env.robot_finihsed_set) == env.robot_num:
         env.step_path()
+    """
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     '''
     for i in range(300):
 
