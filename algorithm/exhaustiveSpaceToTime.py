@@ -1,12 +1,15 @@
 import time
 import sys
 import numpy as np
+# m node, n robot, T length        (m^n)^T
+# sys.setrecursionlimit(pow(pow(16, 2), 15))
 
 # cost so many time
 class ExhaustiveSpaceToTime():
     def __init__(self, graph, ROBOT):        
         self.Graph = graph
         self.node = self.Graph.node
+        self.start_ids = None
         self.get_start_ids(ROBOT)
         self.k = len(ROBOT)
         
@@ -16,22 +19,42 @@ class ExhaustiveSpaceToTime():
         self.case_X_t = []
         self.case_num = 0
         self.solutions = []
+        self.X0 = None
         
     def solve(self):
         self.iter_X_t()
         self.case_num = pow(len(self.single_robot_X_t), 2)
         self.cal_combination_case_k_robot(self.k)
-        print(len(self.case_X_t), self.case_num)
         # cal X0 based on initial state
-        X0 = None
-        self.iter_solution((X0, ), 1)
+        X0 = np.zeros((self.k, self.node))
+        flag = 0
+        for key, value in self.start_ids.items():
+            j = value
+            while j > 0:
+                X0[flag][int(key)] = 1
+                j -= 1
+                flag += 1
+        self.X0 = X0
+        self.iter_solution((), 0)
         Result = self.solutions[0]
         return self.trans(Result)
     
     
     def trans(self, X):
         # X to path
-        return None
+        paths = []
+        for i in range(self.k):
+            path = []
+            for j in range(len(X)):
+                temp = np.argmax(X[j][i])
+                if temp in self.Graph.degree1 and len(path) > 0:
+                    if temp == path[-1]:
+                        break
+                path.append(temp)
+        
+            paths.append({'path': path})
+            
+        return paths
         
     
     
@@ -58,13 +81,18 @@ class ExhaustiveSpaceToTime():
     
 
     
-    def iter_solution(self, out=(), i=1):  
+    def iter_solution(self, out=(), i=0):
         if len(self.solutions) > 0:
-            return
+            if len(self.solutions[0]) <= i:
+                return
         temp = list(out)
-        self.checkConditions(temp)
+        if len(temp) >= 1:
+            self.checkConditions(temp)
         for j in range(self.case_num):
-            self.iter_solution(out + (self.case_X_t[j], ), i + 1)
+            if i == 0:
+                self.iter_solution(out + (self.X0, ), i + 1)
+            else:
+                self.iter_solution(out + (self.case_X_t[j], ), i + 1)
     
     def cal_combination_case_k_robot(self, k, out=()):
         # cal self.case_X_t [(k, node), (k, node)]
@@ -91,8 +119,9 @@ class ExhaustiveSpaceToTime():
         #  Xi:  np.shape(k, node)
         
         # robot must move to another place at X1, i.e. X1 != X0
-        if np.max(X[0].dot(X[1].T)) >= 1:
-            return
+        if len(X) == 2:
+            if np.max(X[0].dot(X[1].T)) >= 1:
+                return
         
         # for any robot, it will appear on the end place.
         for i in range(self.k):

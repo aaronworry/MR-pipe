@@ -198,22 +198,24 @@ if __name__ == '__main__':
     env = Env(dt = 0.8, pipeDict = pipeDict2, dim=3)
 
     ROBOT = [np.array([0., -1., 0.]), np.array([0., -2., 0.])]
-    """
-    alg = ExhaustiveAlgorithm(env.graph, ROBOT)
-    walks = alg.find_optimize_solution()    
-    """
-    """
+
+    # alg = ExhaustiveAlgorithm(env.graph, ROBOT)
+    # walks = alg.find_optimize_solution()    
+
+
     alg = HeuristicAlgorithm(env.graph, ROBOT)
     walks = alg.my_algorithm()
-    """
-    alg = ExhaustiveSpaceToTime(env.graph, ROBOT)
-    alg.solve()
-    """
+
+
+    # alg = ExhaustiveSpaceToTime(env.graph, ROBOT)
+    # walks = alg.solve()
+
+    print(walks)
     env.path_planning(walks)    
     time.sleep(1)
     while not len(env.robot_finihsed_set) == env.robot_num:
         env.step_path()
-    """
+    
     
     
     
