@@ -2,7 +2,7 @@ import time
 import sys
 import numpy as np
 # m node, n robot, T length        (m^n)^T
-# sys.setrecursionlimit(pow(pow(16, 2), 15))
+sys.setrecursionlimit(10000)
 
 # cost so many time
 class ExhaustiveSpaceToTime():
@@ -12,18 +12,19 @@ class ExhaustiveSpaceToTime():
         self.start_ids = None
         self.get_start_ids(ROBOT)
         self.k = len(ROBOT)
-        
         self.graph = [list(elem) for elem in self.Graph.get_edges()]
-        self.A = self.get_adjance_matrix()
+        
         self.single_robot_X_t = []
         self.case_X_t = []
         self.case_num = 0
         self.solutions = []
         self.X0 = None
         
-    def solve(self):
         self.iter_X_t()
-        self.case_num = pow(len(self.single_robot_X_t), 2)
+        self.A, self.robot_node_dict = self.get_adjance_matrix()
+        
+    def solve(self):
+        self.case_num = pow(len(self.single_robot_X_t), self.k)
         self.cal_combination_case_k_robot(self.k)
         # cal X0 based on initial state
         X0 = np.zeros((self.k, self.node))
@@ -35,9 +36,8 @@ class ExhaustiveSpaceToTime():
                 j -= 1
                 flag += 1
         self.X0 = X0
-        self.iter_solution((), 0)
-        Result = self.solutions[0]
-        return self.trans(Result)
+        self.iter_solution(self.case_X_t, self.X0, (self.X0, ), 1)
+        return self.trans(self.solutions[0])
     
     
     def trans(self, X):
@@ -60,12 +60,25 @@ class ExhaustiveSpaceToTime():
     
     def get_adjance_matrix(self):
         result = np.zeros((self.node, self.node))
+        robot_nodes = {}                # {id:[np.zeros], }
         for item in self.graph:
             result[item[0]][item[1]] = 1
             result[item[1]][item[0]] = 1
+            
+            if item[0] not in robot_nodes:
+                robot_nodes[item[0]] = [self.single_robot_X_t[item[1]]]
+            else:
+                robot_nodes[item[0]].append(self.single_robot_X_t[item[1]])
+            
+            if item[1] not in robot_nodes:
+                robot_nodes[item[1]] = [self.single_robot_X_t[item[0]]]
+            else:
+                robot_nodes[item[1]].append(self.single_robot_X_t[item[0]])
+            
         for node_id in self.Graph.degree1:
             result[node_id][node_id] = 1
-        return result
+            robot_nodes[node_id].append(self.single_robot_X_t[node_id])
+        return result, robot_nodes
  
         
     def get_start_ids(self, ROBOT):
@@ -81,18 +94,23 @@ class ExhaustiveSpaceToTime():
     
 
     
-    def iter_solution(self, out=(), i=0):
+    def iter_solution(self, X_list, X0, out=(), iter_num=0):
+        if iter_num > 20:
+            return
         if len(self.solutions) > 0:
-            if len(self.solutions[0]) <= i:
-                return
-        temp = list(out)
-        if len(temp) >= 1:
-            self.checkConditions(temp)
-        for j in range(self.case_num):
-            if i == 0:
-                self.iter_solution(out + (self.X0, ), i + 1)
+            return 
+        Case = self.checkConditions(out)
+        
+        for item_case in X_list:
+            if iter_num == 1:
+                # robot must move to another place at X1, i.e. X1 != X0
+                if np.max(X0.dot(item_case.T)) < 0.9 and np.min(item_case <= X0.dot(self.A)) == 1:
+                    self.iter_solution(X_list, X0, out + (item_case, ), iter_num + 1)
             else:
-                self.iter_solution(out + (self.case_X_t[j], ), i + 1)
+                temp = list(out)
+                # satisfy that Xi -> Xi+1 is reasonable
+                if np.min(item_case <= temp[-1].dot(self.A)) == 1:
+                    self.iter_solution(X_list, X0, out + (item_case, ), iter_num + 1)
     
     def cal_combination_case_k_robot(self, k, out=()):
         # cal self.case_X_t [(k, node), (k, node)]
@@ -111,31 +129,19 @@ class ExhaustiveSpaceToTime():
             self.single_robot_X_t.append(result)
         
         
-        
 
-
-    def checkConditions(self, X):
+    def checkConditions(self, x):
+        X = list(x)
         #  X :  [X0, X1, ..., XT]
         #  Xi:  np.shape(k, node)
-        
-        # robot must move to another place at X1, i.e. X1 != X0
-        if len(X) == 2:
-            if np.max(X[0].dot(X[1].T)) >= 1:
-                return
-        
+        if len(X) < 2:
+            return False
         # for any robot, it will appear on the end place.
         for i in range(self.k):
-            summ = 0
-            for item in self.Graph.degree1:
-                summ += X[-1][i][item]
-            if summ != 1:
-                return
-             
-        # satisfy that Xi -> Xi+1 is reasonable
-        for i in range(len(X) - 1):
-            if np.max(X[i+1] > X[i].dot(self.A)):
-                return
-        
+            print(np.argmax(X[-1][i]))
+            if np.argmax(X[-1][i]) not in self.Graph.degree1:
+                return False
+
         # verify that all edges are routed
         weight = [0 for item in self.graph]        
         for i in range(len(X) - 1):
@@ -146,6 +152,8 @@ class ExhaustiveSpaceToTime():
         
         if min(weight) > 0:
             self.solutions.append(X)
+            return True
+        return False
             
         
         
