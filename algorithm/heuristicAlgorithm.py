@@ -94,7 +94,45 @@ class HeuristicAlgorithm():
                                 distance = temp
                     self.try_to_merge(path1, path2, walk)   
                     self.paths[item].append({'path': walk, 'length': self.get_walk_length(walk), 'count': len(walk)})
-        """            
+        """
+        
+        for e in self.__sorted_edges:
+            path_temp = [e['start_node'], e['end_node']]
+            if not self.check_added_all(path_temp, self.paths):
+                temp_item, temp_walk = 0, {'path': None, 'length': sys.maxsize, 'count': 0}
+                for item in self.start_ids:
+                    walk = []
+                    path1 = self.Graph.graph.get_shortest_paths(item, to=path_temp[0], weights=self.Graph.graph.es["weight"], output="vpath",)[0]
+                    path2, distance = None, sys.maxsize
+                    for goal in self.Graph.degree1:
+                        path = self.Graph.graph.get_shortest_paths(path_temp[1], to=goal, weights=self.Graph.graph.es["weight"], output="vpath",)[0]
+                        temp = self.Graph.get_length_graph(path)
+                        if temp <= distance:
+                            path2 = path
+                            distance = temp
+                    self.try_to_merge(path1, path2, walk)
+                    path_temp1 = {'path': walk, 'length': self.get_walk_length(walk), 'count': len(walk)}
+                    
+                    walk = []
+                    path1 = self.Graph.graph.get_shortest_paths(item, to=path_temp[1], weights=self.Graph.graph.es["weight"], output="vpath",)[0]
+                    path2, distance = None, sys.maxsize
+                    for goal in self.Graph.degree1:
+                        path = self.Graph.graph.get_shortest_paths(path_temp[0], to=goal, weights=self.Graph.graph.es["weight"], output="vpath",)[0]
+                        temp = self.Graph.get_length_graph(path)
+                        if temp <= distance:
+                            path2 = path
+                            distance = temp
+                    self.try_to_merge(path1, path2, walk)
+                    path_temp2 = {'path': walk, 'length': self.get_walk_length(walk), 'count': len(walk)}
+                    
+                    if path_temp1['length'] <= path_temp2['length']:
+                        if path_temp1['length'] < temp_walk['length']:
+                            temp_item, temp_walk = item, path_temp1
+                    else:
+                        if path_temp2['length'] < temp_walk['length']:
+                            temp_item, temp_walk = item, path_temp2
+                self.paths[temp_item].append(temp_walk)
+        """
         for item in self.start_ids:
             for e in self.__sorted_edges:
                 path_temp = [e['start_node'], e['end_node']]
@@ -128,7 +166,7 @@ class HeuristicAlgorithm():
                         self.paths[item].append(path_temp1)
                     else:
                         self.paths[item].append(path_temp2)
-        
+        """
         for item in self.paths:
             self.paths[item] = sorted(self.paths[item], key=itemgetter('length'), reverse=True)   # 降序
         for i in self.start_ids:
@@ -145,6 +183,17 @@ class HeuristicAlgorithm():
             reverse_edge = [edge[1], edge[0]]
             if self.sub_list_exists(walk, reverse_edge):
                 return True
+        return False
+    
+    def check_added_all(self, edge, paths_dict):
+        for item in self.start_ids:
+            for e in paths_dict[item]:
+                walk = e['path']
+                if self.sub_list_exists(walk, edge):
+                    return True
+                reverse_edge = [edge[1], edge[0]]
+                if self.sub_list_exists(walk, reverse_edge):
+                    return True
         return False
 
     def add_dummy_tours(self, idx, missing_number):

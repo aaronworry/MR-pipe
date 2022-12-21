@@ -203,12 +203,12 @@ if __name__ == '__main__':
     # walks = alg.find_optimize_solution()    
 
 
-    # alg = HeuristicAlgorithm(env.graph, ROBOT)
-    # walks = alg.my_algorithm()
+    alg = HeuristicAlgorithm(env.graph, ROBOT)
+    walks = alg.my_algorithm()
 
 
-    alg = ExhaustiveSpaceToTime(env.graph, ROBOT)
-    walks = alg.solve()
+    # alg = ExhaustiveSpaceToTime(env.graph, ROBOT)
+    # walks = alg.solve()
 
     print(walks)
     env.path_planning(walks)    
