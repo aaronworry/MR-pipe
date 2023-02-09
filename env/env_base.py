@@ -16,13 +16,15 @@ from algorithm.heuristicAlgorithm import HeuristicAlgorithm
 from algorithm.exhaustiveSpaceToTime import ExhaustiveSpaceToTime
 
 vertices0 = np.array([[0., 0., 0.], [0., -1., 0.], [0., -2., 0.], [0., -3., 0.], [1., 0., 0.], [1., -3., 0.], [3., 0., 0.], [3., -3., 0.]])
-vertices1 = np.array([[0., 0., 1.], [0., -1., 1.], [0., -2., 1.], [0., -3., 1.], [1., 0., 1.], [1., -1., 1.], [1., -2., 1.], [1., -3., 1.]])
-    
+vertices1 = np.array([[0., 0., 1.], [0., -1., 1.], [0., -2., 1.], [0., -3., 1.], [1., 0., 1.], [1., -1., 1.], [1., -2., 1.], [1., -3., 1.]])    
 Edge0 = np.asarray([np.asarray([vertices0[0], vertices0[1]]), np.asarray([vertices0[2], vertices0[3]]), np.asarray([vertices0[4], vertices0[6]]), np.asarray([vertices0[5], vertices0[7]])])
 Edge1 = np.asarray([np.asarray([vertices1[0], vertices1[1]]), np.asarray([vertices1[1], vertices1[2]]), np.asarray([vertices1[2], vertices1[3]]), np.asarray([vertices1[4], vertices1[5]]), np.asarray([vertices1[5], vertices1[6]]), np.asarray([vertices1[6], vertices1[7]]), np.asarray([vertices1[1], vertices1[5]]), np.asarray([vertices1[2], vertices1[6]])])
 Edge0_1 = np.asarray([np.asarray([vertices0[0], vertices1[0]]), np.asarray([vertices0[3], vertices1[3]]), np.asarray([vertices0[4], vertices1[4]]), np.asarray([vertices0[5], vertices1[7]])])
+pipeDict2 = {'vertices': [vertices0, vertices1], 'Edge': [Edge0, Edge1, Edge0_1]}
 
-pipeDict2 = {'vertices': [vertices0, vertices1], 'verticalEdge': [Edge0_1], 'horizonEdge': [Edge0, Edge1], 'Edge': [Edge0, Edge1, Edge0_1]}
+vertices = [[0., 0., 0.], [0., -1., 0.], [0., -2., 0.], [0., -3., 0.], [1., 0., 0.], [1., -3., 0.], [3., 0., 0.], [3., -3., 0.], [0., 0., 1.], [0., -1., 1.], [0., -2., 1.], [0., -3., 1.], [1., 0., 1.], [1., -1., 1.], [1., -2., 1.], [1., -3., 1.]]
+edges = [[vertices[0], vertices[1]], [vertices[2], vertices[3]], [vertices[4], vertices[6]], [vertices[5], vertices[7]], [vertices[8], vertices[9]], [vertices[9], vertices[10]], [vertices[10], vertices[11]], [vertices[12], vertices[13]], [vertices[13], vertices[14]], [vertices[14], vertices[15]], [vertices[9], vertices[13]], [vertices[10], vertices[14]], [vertices[0], vertices[8]], [vertices[3], vertices[11]], [vertices[4], vertices[12]], [vertices[5], vertices[15]]]
+pipeDict3 = {'vertices': vertices, 'Edge': edges}
 
 ROBOTS = [np.array([0., -1., 0.]), [0, 0, 1, 0, 0, 0], np.array([0., -2., 0.]), [0, 0, 0, 1, 0, 0]]
 
@@ -33,8 +35,6 @@ class Env():
         self.dt = dt
         self.reward = 0
         self.vertices = pipeDict['vertices']
-        self.verticalPipe = pipeDict['verticalEdge']
-        self.horizonPipe = pipeDict['horizonEdge']
         self.Pipe = pipeDict['Edge']
         
         self.width = 10
@@ -65,7 +65,32 @@ class Env():
         self._create_robots(2)
         
         self.graph = WeightGraph(self.vertices, self.Pipe)
-     
+        self.plot.show()
+    
+    def _create_pipe_scenario(self):
+        # 初始化节点对象
+        for vertice_ar in self.vertices:
+            node = Vertice(self, np.asarray(vertice_ar))
+            self.nodes.append(node)
+        # 初始化管道
+        for edge_ar in self.Pipe:
+            temp1 = np.asarray(edge_ar[0])
+            temp2 = np.asarray(edge_ar[1])
+            flag1, flag2 = None, None
+            for node in self.nodes:
+                if np.array_equal(node.position, temp1):
+                    flag1 = node
+                elif np.array_equal(node.position, temp2):
+                    flag2 = node
+                if flag1 is not None and flag2 is not None:
+                    edge = Edge(flag1, flag2)
+                    self.edges.append(edge)
+                    self.all_edges.add(edge)
+                    break
+        # 可视化界面加载
+        self.plot.init_viewer()
+    
+    """
     def _create_pipe_scenario(self):
         # 初始化节点对象
         for vertice_ar in self.vertices:
@@ -90,6 +115,7 @@ class Env():
                         break
         # 可视化界面加载
         self.plot.init_viewer()
+    """
         
     def _create_robots(self, robot_num):
         # 初始化机器人
@@ -195,13 +221,12 @@ class Env():
         
         
 if __name__ == '__main__':
-    env = Env(dt = 0.8, pipeDict = pipeDict2, dim=3)
+    env = Env(dt = 0.8, pipeDict = pipeDict3, dim=3)
 
     ROBOT = [np.array([0., -1., 0.]), np.array([0., -2., 0.])]
 
     # alg = ExhaustiveAlgorithm(env.graph, ROBOT)
     # walks = alg.find_optimize_solution()    
-
 
     alg = HeuristicAlgorithm(env.graph, ROBOT)
     walks = alg.my_algorithm()

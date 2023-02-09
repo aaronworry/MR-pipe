@@ -18,6 +18,58 @@ class WeightGraph():
 
     def generate_graph(self):
         self.graph = Graph()
+        number_of_vertex = len(self.env_vertices)
+        number_of_edges = len(self.env_edges)
+            
+        self.graph.add_vertices(number_of_vertex)
+        self.node = number_of_vertex
+
+        # label all the vertices
+        for i in range(number_of_vertex):
+            self.graph.vs[i]["id"] = i
+            self.graph.vs[i]['neighbor'] = []
+            self.graph.vs[i]["position"] = np.asarray(self.env_vertices[i])
+            
+        edges = []
+        weights = []
+        for item in self.env_edges:
+            position1, position2 = np.asarray(item[0]), np.asarray(item[1])   # （3, ）np.ndarray 
+            flag1, flag2 = None, None
+            for i in range(number_of_vertex):
+                if np.array_equal(self.graph.vs[i]["position"], position1):
+                    flag1 = self.graph.vs[i]['id']
+                elif np.array_equal(self.graph.vs[i]["position"], position2):
+                    flag2 = self.graph.vs[i]['id']
+                if flag1 is not None and flag2 is not None:
+                    edge = [flag1, flag2]
+                    self.graph.vs[flag1]['neighbor'].append(flag2)
+                    self.graph.vs[flag2]['neighbor'].append(flag1)
+                    edges.append(edge)
+                    # weight = self.cal_weight(edge)
+                    # weights.append(weight)
+                    break
+        
+        self.graph.add_edges(edges)     
+        self.graph.es['weight'] = [1] * len(edges)
+        self.graph.es['label'] = [1] * len(edges)
+        self.graph.es["curved"] = False
+        degrees = [0] * number_of_vertex
+        for i in range(number_of_vertex):
+            degrees[i] = self.graph.degree(i)
+            if degrees[i] == 1:
+                self.__is1degree = True
+                graf = self.get_edges()
+                adj = self.get_adj(i,graf)
+                self.degree1.append(i)
+                self.degree134.append(i)
+            elif degrees[i] == 2:
+                self.degree2.append(i)
+            else:
+                self.degree34.append(i)
+                self.degree134.append(i)
+    """
+    def generate_graph(self):
+        self.graph = Graph()
         temp = len(self.env_vertices)
         number_of_vertex = 0
         for i in range(temp):
@@ -78,10 +130,8 @@ class WeightGraph():
                 self.degree2.append(i)
             else:
                 self.degree34.append(i)
-                self.degree134.append(i)
-
-        
-        
+                self.degree134.append(i)    
+    """    
                 
     def find_path(self, idx):
         temp = []
