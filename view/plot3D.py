@@ -30,8 +30,6 @@ class env_viewer_3D():
         self.pipeEdge_plot_list = []
         
         self.robots = env.robots
-        self.pipeVertices = env.vertices   #nodes
-        self.pipeEdges = env.horizonPipe # edges
         self.edges = env.edges
         self.nodes = env.nodes
         
