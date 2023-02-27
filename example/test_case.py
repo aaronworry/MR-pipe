@@ -7,18 +7,17 @@ from algorithm.exhaustiveAlgorithm import ExhaustiveAlgorithm
 from algorithm.heuristicAlgorithm import HeuristicAlgorithm
 from algorithm.exhaustiveSpaceToTime import ExhaustiveSpaceToTime
 
-ROBOTS = [np.array([0., -1., 0.]), [0, 0, 1, 0, 0, 0], np.array([0., -2., 0.]), [0, 0, 0, 1, 0, 0]]
-env = Env(dt = 0.8, pipe_path="../maps/case1.yaml", robots = ROBOTS, dim=3)
+env = Env(dt = 0.8, pipe_path="../maps/case1.yaml", dim=3)
 
 
-#alg = ExhaustiveAlgorithm(env.graph, env.ROBOTS)
-#walks = alg.find_optimize_solution()    
+# alg = ExhaustiveAlgorithm(env.graph, env.robots)
+# walks = alg.find_optimize_solution()    
 
-alg = HeuristicAlgorithm(env.graph, env.ROBOTS)
+alg = HeuristicAlgorithm(env.graph, env.robots)
 walks = alg.my_algorithm()
 
-#alg = ExhaustiveSpaceToTime(env.graph, env.ROBOTS)
-#walks = alg.solve()
+# alg = ExhaustiveSpaceToTime(env.graph, env.robots)
+# walks = alg.solve()
 
 print(walks)
 env.path_planning(walks)    

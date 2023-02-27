@@ -16,18 +16,18 @@ from algorithm.heuristicAlgorithm import HeuristicAlgorithm
 from algorithm.exhaustiveSpaceToTime import ExhaustiveSpaceToTime
 from maps.getMap import GetMap
 
-ROBOTS = [np.array([0., -1., 0.]), [0, 0, 1, 0, 0, 0], np.array([0., -2., 0.]), [0, 0, 0, 1, 0, 0]]
-
 class Env():
-    def __init__(self, dt, pipe_path, robots, dim=2):
-        self.ROBOTS = ROBOTS
-        self.robot_num = len(self.ROBOTS)//2
+    def __init__(self, dt, pipe_path, dim=2):
         self.robots = []
         self.dt = dt
         self.reward = 0
         self.maps = GetMap(pipe_path)
         self.vertices = self.maps.map_dict['vertices']
         self.Pipe = self.maps.map_dict['edges']
+        self.ROBOTS = self.maps.map_dict['robots']
+        self.ROBOTS_ORI = self.maps.map_dict['robots_ori']
+        self.robot_num = len(self.ROBOTS)
+        
         
         self.width = 10
         self.height = 10
@@ -54,7 +54,7 @@ class Env():
         else:
             self.plot = env_viewer(self)
         self._create_pipe_scenario()
-        self._create_robots(2)
+        self._create_robots()
         
         self.graph = WeightGraph(self.vertices, self.Pipe)
         self.plot.show()
@@ -109,10 +109,10 @@ class Env():
         self.plot.init_viewer()
     """
         
-    def _create_robots(self, robot_num):
+    def _create_robots(self):
         # 初始化机器人
-        for i in range(robot_num):
-            robot = Robot(self, i, ROBOTS[2*i], ROBOTS[2*i+1])
+        for i in range(self.robot_num):
+            robot = Robot(self, i, np.asarray(self.ROBOTS[i]), self.ROBOTS_ORI[i])
             robot.color = self.color[(i+1)%len(self.color)]
             self.robots.append(robot)  
         # 可视化机器人
@@ -211,54 +211,5 @@ class Env():
         self.plot.show_ani()
     """
         
-        
-if __name__ == '__main__':
-    env = Env(dt = 0.8, pipe_path="../maps/case1.yaml", dim=3)
 
-
-    # alg = ExhaustiveAlgorithm(env.graph, ROBOT)
-    # walks = alg.find_optimize_solution()    
-
-    alg = HeuristicAlgorithm(env.graph, env.ROBOTS)
-    walks = alg.my_algorithm()
-
-
-    # alg = ExhaustiveSpaceToTime(env.graph, ROBOT)
-    # walks = alg.solve()
-
-    print(walks)
-    env.path_planning(walks)    
-    time.sleep(1)
-    while not len(env.robot_finihsed_set) == env.robot_num:
-        env.step_path()
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    '''
-    for i in range(300):
-
-        des_vel = env.car.cal_des_vel()
-        env.car.move_forward(des_vel)
-
-        env.render()
-    
-
-    env.show()
-    '''
-    
     

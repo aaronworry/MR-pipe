@@ -8,8 +8,8 @@ import numpy as np
 # I created a class to encapsulate my algorithm.
 class HeuristicAlgorithm():
 
-    def __init__(self, graph, ROBOT):
-        self.ROBOT = [item for item in ROBOT if len(item)==3]
+    def __init__(self, graph, robots):
+        self.robots = robots
         self.Graph = graph
         self.__edges = None
         self.__sorted_edges = []
@@ -18,14 +18,14 @@ class HeuristicAlgorithm():
         self.aspect_found = {}
         self.paths = {}
         self.result = []
-        self.get_start_ids(self.ROBOT)
-        self.k = len(self.ROBOT)
+        self.get_start_ids(self.robots)
+        self.k = len(self.robots)
         
-    def get_start_ids(self, ROBOT):
+    def get_start_ids(self, robots):
         start_ids = {}
-        for robot in ROBOT:
+        for robot in robots:
             for i in range(self.Graph.node):
-                if np.array_equal(self.Graph.graph.vs[i]['position'], robot):
+                if np.array_equal(self.Graph.graph.vs[i]['position'], robot.position):
                     if self.Graph.graph.vs[i]['id'] not in start_ids:
                         start_ids[self.Graph.graph.vs[i]['id']] = 1
                         self.paths[self.Graph.graph.vs[i]['id']] = []

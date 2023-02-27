@@ -3,13 +3,13 @@ import sys
 import numpy as np
 
 class ExhaustiveAlgorithm():
-    def __init__(self, graph, ROBOT):
-        self.ROBOT = [item for item in ROBOT if len(item)==3]
+    def __init__(self, graph, robots):
+        self.robots = robots
         self.Graph = graph
         self.paths = []
         self.found = []
-        self.get_start_ids(self.ROBOT)
-        self.k = len(self.ROBOT)
+        self.get_start_ids(self.robots)
+        self.k = len(self.robots)
         self.graph = [list(elem) for elem in self.Graph.get_edges()]
 
     def calculate_avaliable_solution(self):
@@ -36,11 +36,11 @@ class ExhaustiveAlgorithm():
                 minLen = tempmax
         return walks
         
-    def get_start_ids(self, ROBOT):
+    def get_start_ids(self, robots):
         start_ids = {}
-        for robot in ROBOT:
+        for robot in robots:
             for i in range(self.Graph.node):
-                if np.array_equal(self.Graph.graph.vs[i]['position'], robot):
+                if np.array_equal(self.Graph.graph.vs[i]['position'], robot.position):
                     if self.Graph.graph.vs[i]['id'] not in start_ids:
                         start_ids[self.Graph.graph.vs[i]['id']] = 1
                     else:
