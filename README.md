@@ -1,4 +1,4 @@
 # MR-pipe
 
-cd env  
-python env_base.py
+cd example  
+python test_case.py
