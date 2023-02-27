@@ -14,28 +14,20 @@ from algorithm.weightGraph import WeightGraph
 from algorithm.exhaustiveAlgorithm import ExhaustiveAlgorithm
 from algorithm.heuristicAlgorithm import HeuristicAlgorithm
 from algorithm.exhaustiveSpaceToTime import ExhaustiveSpaceToTime
-
-vertices0 = np.array([[0., 0., 0.], [0., -1., 0.], [0., -2., 0.], [0., -3., 0.], [1., 0., 0.], [1., -3., 0.], [3., 0., 0.], [3., -3., 0.]])
-vertices1 = np.array([[0., 0., 1.], [0., -1., 1.], [0., -2., 1.], [0., -3., 1.], [1., 0., 1.], [1., -1., 1.], [1., -2., 1.], [1., -3., 1.]])    
-Edge0 = np.asarray([np.asarray([vertices0[0], vertices0[1]]), np.asarray([vertices0[2], vertices0[3]]), np.asarray([vertices0[4], vertices0[6]]), np.asarray([vertices0[5], vertices0[7]])])
-Edge1 = np.asarray([np.asarray([vertices1[0], vertices1[1]]), np.asarray([vertices1[1], vertices1[2]]), np.asarray([vertices1[2], vertices1[3]]), np.asarray([vertices1[4], vertices1[5]]), np.asarray([vertices1[5], vertices1[6]]), np.asarray([vertices1[6], vertices1[7]]), np.asarray([vertices1[1], vertices1[5]]), np.asarray([vertices1[2], vertices1[6]])])
-Edge0_1 = np.asarray([np.asarray([vertices0[0], vertices1[0]]), np.asarray([vertices0[3], vertices1[3]]), np.asarray([vertices0[4], vertices1[4]]), np.asarray([vertices0[5], vertices1[7]])])
-pipeDict2 = {'vertices': [vertices0, vertices1], 'Edge': [Edge0, Edge1, Edge0_1]}
-
-vertices = [[0., 0., 0.], [0., -1., 0.], [0., -2., 0.], [0., -3., 0.], [1., 0., 0.], [1., -3., 0.], [3., 0., 0.], [3., -3., 0.], [0., 0., 1.], [0., -1., 1.], [0., -2., 1.], [0., -3., 1.], [1., 0., 1.], [1., -1., 1.], [1., -2., 1.], [1., -3., 1.]]
-edges = [[vertices[0], vertices[1]], [vertices[2], vertices[3]], [vertices[4], vertices[6]], [vertices[5], vertices[7]], [vertices[8], vertices[9]], [vertices[9], vertices[10]], [vertices[10], vertices[11]], [vertices[12], vertices[13]], [vertices[13], vertices[14]], [vertices[14], vertices[15]], [vertices[9], vertices[13]], [vertices[10], vertices[14]], [vertices[0], vertices[8]], [vertices[3], vertices[11]], [vertices[4], vertices[12]], [vertices[5], vertices[15]]]
-pipeDict3 = {'vertices': vertices, 'Edge': edges}
+from maps.getMap import GetMap
 
 ROBOTS = [np.array([0., -1., 0.]), [0, 0, 1, 0, 0, 0], np.array([0., -2., 0.]), [0, 0, 0, 1, 0, 0]]
 
 class Env():
-    def __init__(self, dt, pipeDict, robot_num=2, dim=2):
-        self.robot_num = robot_num
+    def __init__(self, dt, pipe_path, robots, dim=2):
+        self.ROBOTS = ROBOTS
+        self.robot_num = len(self.ROBOTS)//2
         self.robots = []
         self.dt = dt
         self.reward = 0
-        self.vertices = pipeDict['vertices']
-        self.Pipe = pipeDict['Edge']
+        self.maps = GetMap(pipe_path)
+        self.vertices = self.maps.map_dict['vertices']
+        self.Pipe = self.maps.map_dict['edges']
         
         self.width = 10
         self.height = 10
@@ -221,14 +213,13 @@ class Env():
         
         
 if __name__ == '__main__':
-    env = Env(dt = 0.8, pipeDict = pipeDict3, dim=3)
+    env = Env(dt = 0.8, pipe_path="../maps/case1.yaml", dim=3)
 
-    ROBOT = [np.array([0., -1., 0.]), np.array([0., -2., 0.])]
 
     # alg = ExhaustiveAlgorithm(env.graph, ROBOT)
     # walks = alg.find_optimize_solution()    
 
-    alg = HeuristicAlgorithm(env.graph, ROBOT)
+    alg = HeuristicAlgorithm(env.graph, env.ROBOTS)
     walks = alg.my_algorithm()
 
 

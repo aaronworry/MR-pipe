@@ -6,12 +6,13 @@ sys.setrecursionlimit(10000)
 
 # cost so many time
 class ExhaustiveSpaceToTime():
-    def __init__(self, graph, ROBOT):        
+    def __init__(self, graph, ROBOT):     
+        self.ROBOT = [item for item in ROBOT if len(item)==3]
         self.Graph = graph
         self.node = self.Graph.node
         self.start_ids = None
-        self.get_start_ids(ROBOT)
-        self.k = len(ROBOT)
+        self.get_start_ids(self.ROBOT)
+        self.k = len(self.ROBOT)
         self.graph = [list(elem) for elem in self.Graph.get_edges()]
         
         self.single_robot_X_t = []

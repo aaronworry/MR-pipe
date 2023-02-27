@@ -3,12 +3,13 @@ import sys
 import numpy as np
 
 class ExhaustiveAlgorithm():
-    def __init__(self, graph, ROBOT):        
+    def __init__(self, graph, ROBOT):
+        self.ROBOT = [item for item in ROBOT if len(item)==3]
         self.Graph = graph
         self.paths = []
         self.found = []
-        self.get_start_ids(ROBOT)
-        self.k = len(ROBOT)
+        self.get_start_ids(self.ROBOT)
+        self.k = len(self.ROBOT)
         self.graph = [list(elem) for elem in self.Graph.get_edges()]
 
     def calculate_avaliable_solution(self):

@@ -9,6 +9,7 @@ import numpy as np
 class HeuristicAlgorithm():
 
     def __init__(self, graph, ROBOT):
+        self.ROBOT = [item for item in ROBOT if len(item)==3]
         self.Graph = graph
         self.__edges = None
         self.__sorted_edges = []
@@ -17,8 +18,8 @@ class HeuristicAlgorithm():
         self.aspect_found = {}
         self.paths = {}
         self.result = []
-        self.get_start_ids(ROBOT)
-        self.k = len(ROBOT)
+        self.get_start_ids(self.ROBOT)
+        self.k = len(self.ROBOT)
         
     def get_start_ids(self, ROBOT):
         start_ids = {}
