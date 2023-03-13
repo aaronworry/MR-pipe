@@ -288,7 +288,8 @@ class Robot():
                                     self.conflict_resolution_forward_flag = True
                                     self.prior_robots.add(robot)
                                     self.collision_path_id = self.path[0]
-                                    robot.collision_path_id = self.collision_path_id                            
+                                    robot.collision_path_id = self.collision_path_id
+                            
                         # 度为 3 4 时
                         else:
                             if np.array_equal(self.env.graph.get_position_of_node(self.path[1]), self.last_vertice.position):
