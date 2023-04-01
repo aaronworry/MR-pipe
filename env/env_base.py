@@ -29,10 +29,10 @@ class Env():
         self.robot_num = len(self.ROBOTS)
         
         
-        self.width = 10
-        self.height = 10
-        self.offset_x = -2
-        self.offset_y = -5
+        self.width = 5.
+        self.height = 6.
+        self.offset_x = 0.
+        self.offset_y = -1.
         self.layer_num = 2
         
         self.time = 0
@@ -57,7 +57,7 @@ class Env():
         self._create_robots()
         
         self.graph = WeightGraph(self.vertices, self.Pipe)
-        self.plot.show()
+        self.plot.show(True)
     
     def _create_pipe_scenario(self):
         # 初始化节点对象
@@ -117,7 +117,7 @@ class Env():
             self.robots.append(robot)  
         # 可视化机器人
         self.plot.drawRobots(self.robots)
-        self.plot.show()
+        # self.plot.show()
 
     def path_planning(self, paths):
         # task_allocation   为机器人分配路径, 并更新颜色

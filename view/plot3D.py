@@ -36,10 +36,12 @@ class env_viewer_3D():
     def init_viewer(self):
         self.ax.set_xlim(self.offset_x, self.offset_x + self.width)
         self.ax.set_ylim(self.offset_y, self.offset_y + self.height)
-        self.ax.set_zlim(-2, 2)
+        self.ax.set_zlim(0., 2.)
         self.ax.set_xlabel("x [m]")
         self.ax.set_ylabel("y [m]")
         self.ax.set_zlabel("z [m]")
+        # self.ax.spines['right'].set_visible(False)
+        # self.ax.spines['top'].set_visible(False)
         self.draw_pipe()
         
     
@@ -71,8 +73,25 @@ class env_viewer_3D():
     def pause(self, time=0.001):
         plt.pause(time)
         
-    def show(self):
+    def show(self, flag=False):
         plt.draw()
+        if flag:
+            myfont = mpl.font_manager.FontProperties(fname=r"c:\windows\fonts\times.ttf", size=14)
+            self.ax.set_xlabel("x(m)", fontproperties = myfont)
+            self.ax.set_ylabel("y(m)", fontproperties = myfont)
+            self.ax.set_zlabel("z(m)", fontproperties = myfont)
+            self.ax.set_xticks([0, 1, 2, 3, 4, 5], fontproperties = myfont)
+            self.ax.set_yticks([-1, 0, 1, 2, 3, 4, 5], fontproperties = myfont)
+            self.ax.set_zticks([0, 1, 2], fontproperties = myfont)
+            self.ax.set_xticklabels([0, 1, 2, 3, 4, 5], fontproperties = myfont)
+            self.ax.set_yticklabels([-1, 0, 1, 2, 3, 4, 5], fontproperties = myfont)
+            self.ax.set_zticklabels([0, 1, 2], fontproperties = myfont)
+            self.ax.grid(False)
+            # plt.xticks(fontproperties = myfont)
+            # plt.yticks(fontproperties = myfont)
+            # plt.axis('off')
+            plt.savefig('../figures/result.pdf',dpi=300,bbox_inches = "tight")
+            
         
     def drawPipeEdges(self, edges):
         for edge in edges:
