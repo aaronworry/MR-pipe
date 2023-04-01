@@ -21,6 +21,7 @@ class env_viewer_3D():
         self.height = env.height
         self.offset_x = env.offset_x
         self.offset_y = env.offset_y
+        self.pipe_path = env.pipe_path
 
         self.fig = plt.figure()
         self.ax = self.fig.gca(projection='3d')
@@ -90,7 +91,7 @@ class env_viewer_3D():
             # plt.xticks(fontproperties = myfont)
             # plt.yticks(fontproperties = myfont)
             # plt.axis('off')
-            plt.savefig('../figures/result.pdf',dpi=300,bbox_inches = "tight")
+            plt.savefig('../figures/result' + self.pipe_path[-6] + '.pdf',dpi=300,bbox_inches = "tight")
             
         
     def drawPipeEdges(self, edges):

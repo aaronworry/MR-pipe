@@ -21,7 +21,8 @@ class Env():
         self.robots = []
         self.dt = dt
         self.reward = 0
-        self.maps = GetMap(pipe_path)
+        self.pipe_path = pipe_path
+        self.maps = GetMap(self.pipe_path)
         self.vertices = self.maps.map_dict['vertices']
         self.Pipe = self.maps.map_dict['edges']
         self.ROBOTS = self.maps.map_dict['robots']
