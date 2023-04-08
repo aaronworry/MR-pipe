@@ -15,8 +15,8 @@ class ExhaustiveSpaceToTime():
         self.k = len(self.robots)
         self.graph = [list(elem) for elem in self.Graph.get_edges()]
         
-        self.single_robot_X_t = []
-        self.case_X_t = []
+        self.single_robot_X_t = []            # using one-hot vector to record all states of robot, include m one-hot vectors whose dimension is m*1
+        self.case_X_t = []      # record all combinations of the state of k robots, m^k matries with shape (k, m), and the row vectors of those matries are one-hot vectors
         self.case_num = 0
         self.solutions = []
         self.X0 = None
@@ -42,7 +42,7 @@ class ExhaustiveSpaceToTime():
     
     
     def trans(self, X):
-        # X to path
+        # transform X to path
         paths = []
         for i in range(self.k):
             path = []
@@ -60,6 +60,7 @@ class ExhaustiveSpaceToTime():
     
     
     def get_adjance_matrix(self):
+        # calculate A
         result = np.zeros((self.node, self.node))
         robot_nodes = {}                # {id:[np.zeros], }
         for item in self.graph:
@@ -96,6 +97,7 @@ class ExhaustiveSpaceToTime():
 
     
     def iter_solution(self, X_list, X0, out=(), iter_num=0):
+        # BFS method
         if iter_num > 20:
             return
         if len(self.solutions) > 0:
@@ -124,6 +126,7 @@ class ExhaustiveSpaceToTime():
             self.cal_combination_case_k_robot(k - 1, out + (self.single_robot_X_t[j], ))
         
     def iter_X_t(self):
+        # calculate all states of robot
         for i in range(self.node):
             result = np.array([0 for item in range(self.node)])
             result[i] = 1
@@ -139,7 +142,6 @@ class ExhaustiveSpaceToTime():
             return False
         # for any robot, it will appear on the end place.
         for i in range(self.k):
-            print(np.argmax(X[-1][i]))
             if np.argmax(X[-1][i]) not in self.Graph.degree1:
                 return False
 
