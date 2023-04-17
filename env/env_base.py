@@ -27,14 +27,14 @@ class Env():
         self.Pipe = self.maps.map_dict['edges']
         self.ROBOTS = self.maps.map_dict['robots']
         self.ROBOTS_ORI = self.maps.map_dict['robots_ori']
+        self.layer_num = self.maps.map_dict['layer_num']
         self.robot_num = len(self.ROBOTS)
         
         
-        self.width = 5.
-        self.height = 6.
-        self.offset_x = 0.
-        self.offset_y = -1.
-        self.layer_num = 2
+        self.width = self.maps.map_dict['width'][0]
+        self.height = self.maps.map_dict['height'][0]
+        self.offset_x = self.maps.map_dict['offset_x'][0]
+        self.offset_y = self.maps.map_dict['offset_y'][0]
         
         self.time = 0
         self.done = False

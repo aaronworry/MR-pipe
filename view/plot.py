@@ -21,22 +21,32 @@ class env_viewer():
         self.offset_y = env.offset_y
         self.layer_num = env.layer_num
         self.fig, self.axes = plt.subplots(nrows = 1, ncols = self.layer_num)
-        
         self.color_list = ['g', 'b', 'r', 'c', 'm', 'y', 'k', 'w']
         self.robot_plot_list = []
         self.pipeEdge_plot_list = []
+        
+        self.pipe_path = env.pipe_path
         
         self.robots = env.robots
         self.edges = env.edges
         self.nodes = env.nodes
         
     def init_viewer(self):
-        for ax in self.axes:
-            ax.set_aspect('equal')
-            ax.set_xlim(self.offset_x, self.offset_x + self.width)
-            ax.set_ylim(self.offset_y, self.offset_y + self.height)
-            ax.set_xlabel("x [m]")
-            ax.set_ylabel("y [m]")
+        """
+        if self.layer_num == 1:
+            self.axes.set_aspect('equal')
+            self.axes.set_xlim(self.offset_x, self.offset_x + self.width)
+            self.axes.set_ylim(self.offset_y, self.offset_y + self.height)
+            self.axes.set_xlabel("x [m]")
+            self.axes.set_ylabel("y [m]")
+        else:
+            for ax in self.axes:
+                ax.set_aspect('equal')
+                ax.set_xlim(self.offset_x, self.offset_x + self.width)
+                ax.set_ylim(self.offset_y, self.offset_y + self.height)
+                ax.set_xlabel("x [m]")
+                ax.set_ylabel("y [m]")
+        """
         self.draw_pipe()
         
     
@@ -54,15 +64,6 @@ class env_viewer():
         pass
     
     def com_cla(self):
-        # self.ax.patches = []
-        # self.ax.texts.clear()
-        '''
-        for pipeEdge_plot in self.pipeEdge_plot_list:
-            pipeEdge_plot.remove()
-
-        for pipeVertice_plot in self.pipeVertice_plot_list:
-            pipeVertice_plot.remove()
-        '''
         for robot_plot in self.robot_plot_list:
             robot_plot.remove()
         self.robot_plot_list = []
@@ -75,10 +76,34 @@ class env_viewer():
     def pause(self, time=0.001):
         plt.pause(time)
         
-    def show(self):
-        # plt.show()
-        # self.fig.canvas.draw()
+    def show(self, flag=False):
         plt.draw()
+        if flag:
+            myfont = mpl.font_manager.FontProperties(fname=r"c:\windows\fonts\times.ttf", size=14)
+            if self.layer_num == 1:
+                self.axes.set_xlabel("x(m)", fontproperties = myfont)
+                self.axes.set_ylabel("y(m)", fontproperties = myfont)
+                self.axes.set_xticks([-1, 0, 1, 2, 3, 4], fontproperties = myfont)
+                self.axes.set_yticks([-2, -1, 0, 1, 2, 3], fontproperties = myfont)
+                self.axes.set_xticklabels([-1, 0, 1, 2, 3, 4], fontproperties = myfont)
+                self.axes.set_yticklabels([-2, -1, 0, 1, 2, 3], fontproperties = myfont)
+                self.axes.spines['right'].set_visible(False)
+                self.axes.spines['top'].set_visible(False)
+            else:
+                for ax in self.axes:
+                    ax.set_xlabel("x(m)", fontproperties = myfont)
+                    ax.set_ylabel("y(m)", fontproperties = myfont)
+                    ax.set_xticks([-1, 0, 1, 2, 3, 4], fontproperties = myfont)
+                    ax.set_yticks([-2, -1, 0, 1, 2, 3], fontproperties = myfont)
+                    ax.set_xticklabels([-1, 0, 1, 2, 3, 4], fontproperties = myfont)
+                    ax.set_yticklabels([-2, -1, 0, 1, 2, 3], fontproperties = myfont)
+                    ax.spines['right'].set_visible(False)
+                    ax.spines['top'].set_visible(False)
+                    # self.ax.grid(False)
+                    # plt.xticks(fontproperties = myfont)
+                    # plt.yticks(fontproperties = myfont)
+                    # plt.axis('off')
+            plt.savefig('../figures/result' + self.pipe_path[-6] + '.pdf',dpi=300,bbox_inches = "tight")
         
     def drawPipeEdges(self, edges):
         for aspect_edge in edges:
@@ -96,17 +121,25 @@ class env_viewer():
         layer_item1 = int(edge.v1.position[2])
         layer_item2 = int(edge.v2.position[2])
         if layer_item1 == layer_item2:
-            # self.line_plot2(self.axes[layer_item1], edge, markersize=2, color=edge.color)
-            self.line_plot(self.axes[layer_item1], edge, markersize=2, color=edge.color)
-            # self.axes[layer_item1].plot([edge.v1.position[0], edge.v2.position[0]], [edge.v1.position[1], edge.v2.position[1]], marker='o', markersize=2, color='black')
-            
+
+            if self.layer_num == 1:
+                self.line_plot(self.axes, edge, markersize=2, color=edge.color)
+            else:
+                self.line_plot(self.axes[layer_item1], edge, markersize=2, color=edge.color)
+        
         
     def drawPipeVertice(self, item):
         layer_item = int(item.position[2])
         if item.neighbor_flag[4] > 0 or item.neighbor_flag[5] > 0:
-            self.point_plot(self.axes[layer_item], item.position, radius=0.1, color="red")
+            if self.layer_num == 1:
+                self.point_plot(self.axes, item.position, radius=0.1, color="red")
+            else:
+                self.point_plot(self.axes[layer_item], item.position, radius=0.1, color="red")
         else:
-            self.point_plot(self.axes[layer_item], item.position, radius=0.08, color="black")
+            if self.layer_num == 1:
+                self.point_plot(self.axes, item.position, radius=0.08, color="black")
+            else:
+                self.point_plot(self.axes[layer_item], item.position, radius=0.08, color="black")
             
         
     def drawRobot(self, robot):
@@ -123,7 +156,10 @@ class env_viewer():
             elif robot.orientation[5] == 1:
                 layer_item = 0
         
-        self.axes[layer_item].add_patch(robot_circle)
+        if self.layer_num == 1:
+            self.axes.add_patch(robot_circle)
+        else:
+            self.axes[layer_item].add_patch(robot_circle)
         self.robot_plot_list.append(robot_circle)
         # 6 ori
         arrow = mpl.patches.Circle(xy=(robot.position[0], robot.position[1]), radius = 0.1, color = robot.color)
@@ -144,7 +180,10 @@ class env_viewer():
             arrow = mpl.patches.Arrow(robot.position[0], robot.position[1], 0, -0.3, width = 0.1, color = robot.color)
         
         arrow.set_zorder(3)
-        self.axes[layer_item].add_patch(arrow)
+        if self.layer_num == 1:
+            self.axes.add_patch(arrow)
+        else:
+            self.axes[layer_item].add_patch(arrow)
         self.robot_plot_list.append(arrow)
         
         
@@ -159,77 +198,10 @@ class env_viewer():
     
         # ax.plot([x], [y], marker='o', markersize=markersize, color=color)
     
-    def point_arrow_plot(self, ax, point, length=0.5, width=0.3, color='red'):
-        # robot
-        px = point[0]
-        py = point[1]
-        theta = point[2]
-
-        pdx = length * cos(theta)
-        pdy = length * sin(theta)
-
-        point_arrow = mpl.patches.Arrow(x=px, y=py, dx=pdx, dy=pdy, color=color, width=width)
-
-        ax.add_patch(point_arrow)
     
     def line_plot(self, ax, edge, markersize=2, color="black"):
         # pipe  line  (2, 3)
         line = mpl.lines.Line2D([edge.v1.position[0], edge.v2.position[0]], [edge.v1.position[1], edge.v2.position[1]], marker='o', markersize=markersize, color=color)
         ax.add_line(line)
         self.pipeEdge_plot_list.append(line)
-        
-    def line_plot2(self, ax, edge, markersize=2, color="black"):
-        # pipe  edge
-        ax.plot([edge.v1.position[0], edge.v2.position[0]], [edge.v1.position[1], edge.v2.position[1]], marker='o', markersize=markersize, color=color)
-        
-    # animation method 1
-    def animate(self):
-
-        self.draw_robot_diff_list()
-
-        return self.ax.patches + self.ax.texts + self.ax.artists
-
-    def show_ani(self):
-        ani = animation.FuncAnimation(
-        self.fig, self.animate, init_func=self.init_plot, interval=100, blit=True, frames=100, save_count=100)
-        plt.show()
-    
-    def save_ani(self, name='animation'): 
-        ani = animation.FuncAnimation(
-        self.fig, self.animate, init_func=self.init_plot, interval=1, blit=False, save_count=300)
-        ani.save(name+'.gif', writer='pillow')
-
-    # # animation method 2
-    def save_gif_figure(self, path, i, format='png'):
-
-        if path.exists():
-            order = str(i).zfill(3)
-            plt.savefig(str(path)+'/'+order+'.'+format, format=format)
-        else:
-            path.mkdir()
-            order = str(i).zfill(3)
-            plt.savefig(str(path)+'/'+order+'.'+format, format=format)
-
-    def create_animate(self, image_path, ani_path, ani_name='animated', keep_len=30, rm_fig_path=True):
-
-        if not ani_path.exists():
-            ani_path.mkdir()
-
-        images = list(image_path.glob('*.png'))
-        images.sort()
-        image_list = []
-        for i, file_name in enumerate(images):
-
-            if i == 0:
-                continue
-
-            image_list.append(imageio.imread(file_name))
-            if i == len(images) - 1:
-                for j in range(keep_len):
-                    image_list.append(imageio.imread(file_name))
-
-        imageio.mimsave(str(ani_path)+'/'+ ani_name+'.gif', image_list)
-        print('Create animation successfully')
-
-        if rm_fig_path:
-            shutil.rmtree(image_path)    
+          

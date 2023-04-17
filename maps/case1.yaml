@@ -26,5 +26,13 @@ map:
         - [0., 0., 0.]
     robots_ori:
         - [1, 0, 0, 0, 0, 0]
+    width:
+        - 5.
+    height:
+        - 6.
+    offset_x:
+        - 0.
+    offset_y:
+        - -1.
         
 
