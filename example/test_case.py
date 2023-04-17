@@ -7,7 +7,7 @@ from algorithm.exhaustiveAlgorithm import ExhaustiveAlgorithm
 from algorithm.heuristicAlgorithm import HeuristicAlgorithm
 from algorithm.exhaustiveSpaceToTime import ExhaustiveSpaceToTime
 
-env = Env(dt = 0.8, pipe_path="../maps/case6.yaml", dim=3)
+env = Env(dt = 0.8, pipe_path="../maps/case0.yaml", dim=3)
 
 
 # alg = ExhaustiveAlgorithm(env.graph, env.robots)

@@ -174,6 +174,14 @@ class HeuristicAlgorithm():
             if self.start_ids[i] > len(self.paths[i]):
                 self.add_dummy_tours(i, self.start_ids[i] - len(self.paths[i]))
         result = self.merge_walks()   # [{}, {}, {}, ...] 
+        for item in result:
+            if item['count'] == 1:
+                item['count'] = 3
+                item['length'] = 2
+                temp_path_node = item['path'][0]
+                new_node = self.Graph.get_adj(temp_path_node, self.Graph.get_edges())[0]
+                item['path'].append(new_node)
+                item['path'].append(temp_path_node)
         self.result = result
 
     def check_added(self, edge, paths):
