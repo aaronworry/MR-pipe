@@ -25,6 +25,7 @@ class ExhaustiveSpaceToTime():
         self.A, self.robot_node_dict = self.get_adjance_matrix()
         
     def solve(self):
+        
         self.case_num = pow(len(self.single_robot_X_t), self.k)
         self.cal_combination_case_k_robot(self.k)
         # cal X0 based on initial state
@@ -39,7 +40,12 @@ class ExhaustiveSpaceToTime():
         self.X0 = X0
         self.iter_solution(self.case_X_t, self.X0, (self.X0, ), 1)
         walks = self.trans(self.solutions[0])
-        
+        # map1: walks = [{'path': [0, 1, 2, 3, 2, 4, 5, 3, 5, 6, 7], 'length': 10, 'count': 11}]
+        # map2: walks = [{'path': [1, 0, 8, 9, 10, 9, 13, 12, 4, 6], 'length': 9, 'count': 10}, {'path': [7, 5, 15, 14, 13, 14, 10, 11, 3, 2], 'length': 9, 'count': 10}]
+        # map3: walks = [{'path': [1, 0, 8, 9, 10, 14, 13, 12, 4, 6], 'length': 9, 'count': 10}, {'path': [2, 3, 11, 10, 9, 13, 14, 15, 5, 7], 'length': 9, 'count': 10}]
+        # map4: walks = [{'path': [0, 1, 0], 'length': 2, 'count': 3}, {'path': [8, 7, 3, 2, 1, 0], 'length': 5, 'count': 6}, {'path': [9, 5, 4, 1, 0, 1, 2, 3, 6, 5, 9], 'length': 10, 'count': 11}]
+        # map5:
+        # map6:
         unvisited_edge_num, sum_visited_edge = self.checkResult(walks)
         
         QQ = len(self.graph) - unvisited_edge_num
@@ -116,7 +122,7 @@ class ExhaustiveSpaceToTime():
     
     def iter_solution(self, X_list, X0, out=(), iter_num=0):
         # BFS method
-        if iter_num > 30:
+        if iter_num > 15:  # 30
             return
         if len(self.solutions) > 0:
             return 
