@@ -25,7 +25,8 @@ class ExhaustiveAlgorithm():
         walks = None
         minLen = sys.maxsize
         u_num = 0
-        for num, e in self.found:
+        all_num = 0
+        for num, All, e in self.found:
             lenList = []
             simple_closed_walk = []
             for walk in e:
@@ -37,7 +38,10 @@ class ExhaustiveAlgorithm():
                 walks = simple_closed_walk
                 minLen = tempmax
                 u_num = num
-        return u_num, walks
+                all_num = All
+        QQ = len(self.graph) - u_num
+        Repe =  (all_num - QQ) / QQ
+        return u_num, Repe, walks
         
     def get_start_ids(self, robots):
         start_ids = {}
@@ -110,8 +114,8 @@ class ExhaustiveAlgorithm():
         for item in temp:
             if temp[item] != 0:
                 return False
-        unvisited_edge_num = self.checkConditions(paths)
-        self.found.append([unvisited_edge_num, paths])
+        unvisited_edge_num, sum_visited_edge = self.checkConditions(paths)
+        self.found.append([unvisited_edge_num, sum_visited_edge, paths])
         """
         if self.checkConditions(paths):
             self.found.append(paths)
@@ -127,12 +131,13 @@ class ExhaustiveAlgorithm():
             i = 0
             for edge in self.graph:
                 if self.check_added2(path, edge):
-                    lst[i] = 1
+                    lst[i] += 1
                 i = i + 1
         for item in lst:
             if item == 0:
                 result += 1
-        return result
+        all_pass = sum(lst)
+        return result, all_pass
 
     def check_added2(self, path, edge):    # 边是否在 路径中
         if self.sub_list_exists(path, edge):

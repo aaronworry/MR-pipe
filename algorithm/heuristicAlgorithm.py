@@ -20,6 +20,7 @@ class HeuristicAlgorithm():
         self.result = []
         self.get_start_ids(self.robots)
         self.k = len(self.robots)
+        self.graph = [list(elem) for elem in self.Graph.get_edges()]
         
     def get_start_ids(self, robots):
         start_ids = {}
@@ -37,7 +38,40 @@ class HeuristicAlgorithm():
     def my_algorithm(self):
         self.sort_edges_descending()
         self.create_paths()
-        return self.result
+        
+        unvisited_edge_num, sum_visited_edge = self.checkResult(self.result)
+        
+        QQ = len(self.graph) - unvisited_edge_num
+        Repe =  (sum_visited_edge - QQ) / QQ
+        
+        return unvisited_edge_num, Repe, self.result
+    
+    def checkResult(self, paths):
+        temp_mat = np.zeros((self.Graph.node, self.Graph.node))
+        for item in paths:
+            path = item['path']
+            for i in range(len(path)-1):
+                if path[i] != path[i+1]:
+                    temp_mat[path[i]][path[i+1]] += 1
+                    temp_mat[path[i+1]][path[i]] += 1
+        sum_visited_edge = np.sum(temp_mat) / 2
+        return 0, sum_visited_edge
+        
+    
+        lst = [0] * len(self.graph)
+        result = 0
+        for item in paths:
+            path = item['path']
+            i = 0
+            for edge in self.graph:
+                if self.check_added2(path, edge):
+                    lst[i] += 1
+                i = i + 1
+        for item in lst:
+            if item == 0:
+                result += 1
+        all_pass = sum(lst)
+        return result, all_pass
 
     def sort_edges_descending(self):
         weights = self.Graph.graph.es['weight']

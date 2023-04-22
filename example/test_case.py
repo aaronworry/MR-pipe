@@ -8,20 +8,20 @@ from algorithm.exhaustiveAlgorithm import ExhaustiveAlgorithm
 from algorithm.heuristicAlgorithm import HeuristicAlgorithm
 from algorithm.exhaustiveSpaceToTime import ExhaustiveSpaceToTime
 
-env = Env(dt = 0.8, pipe_path="../maps/case1.yaml", dim=3)
+env = Env(dt = 0.8, pipe_path="../maps/case2.yaml", dim=3)
 
 start = time.time()
-alg = ExhaustiveAlgorithm(env.graph, env.robots)
-num, walks = alg.find_optimize_solution()    
+# alg = ExhaustiveAlgorithm(env.graph, env.robots)
+# unvisited_num, repetition, walks = alg.find_optimize_solution()    
 
 # alg = HeuristicAlgorithm(env.graph, env.robots)
-# walks = alg.my_algorithm()
+# unvisited_num, repetition, walks = alg.my_algorithm()
 
-# alg = ExhaustiveSpaceToTime(env.graph, env.robots)
-# walks = alg.solve()
+alg = ExhaustiveSpaceToTime(env.graph, env.robots)
+unvisited_num, repetition, walks = alg.solve()
 
 cost = time.time() - start
-print(cost, walks, num)
+print(cost, walks, unvisited_num, repetition)
 env.path_planning(walks)    
 while not len(env.robot_finihsed_set) == env.robot_num:
     env.step_path()

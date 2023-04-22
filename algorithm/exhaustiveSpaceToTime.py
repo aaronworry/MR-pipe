@@ -38,7 +38,25 @@ class ExhaustiveSpaceToTime():
                 flag += 1
         self.X0 = X0
         self.iter_solution(self.case_X_t, self.X0, (self.X0, ), 1)
-        return self.trans(self.solutions[0])
+        walks = self.trans(self.solutions[0])
+        
+        unvisited_edge_num, sum_visited_edge = self.checkResult(walks)
+        
+        QQ = len(self.graph) - unvisited_edge_num
+        Repe =  (sum_visited_edge - QQ) / QQ
+        
+        return unvisited_edge_num, Repe, walks
+    
+    def checkResult(self, paths):
+        temp_mat = np.zeros((self.Graph.node, self.Graph.node))
+        for item in paths:
+            path = item['path']
+            for i in range(len(path)-1):
+                if path[i] != path[i+1]:
+                    temp_mat[path[i]][path[i+1]] += 1
+                    temp_mat[path[i+1]][path[i]] += 1
+        sum_visited_edge = np.sum(temp_mat) / 2
+        return 0, sum_visited_edge
     
     
     def trans(self, X):
@@ -50,10 +68,10 @@ class ExhaustiveSpaceToTime():
                 temp = np.argmax(X[j][i])
                 if temp in self.Graph.degree1 and len(path) > 0:
                     if temp == path[-1]:
-                        break
+                        continue
                 path.append(temp)
         
-            paths.append({'path': path})
+            paths.append({'path': path, 'length': len(path)-1, 'count': len(path)})
             
         return paths
         
@@ -98,11 +116,11 @@ class ExhaustiveSpaceToTime():
     
     def iter_solution(self, X_list, X0, out=(), iter_num=0):
         # BFS method
-        if iter_num > 20:
+        if iter_num > 30:
             return
         if len(self.solutions) > 0:
             return 
-        Case = self.checkConditions(out)
+        self.checkConditions(out)
         
         for item_case in X_list:
             if iter_num == 1:
@@ -153,7 +171,7 @@ class ExhaustiveSpaceToTime():
                     if X[i][j][item[0]] + X[i][j][item[1]] + X[i+1][j][item[0]] + X[i+1][j][item[1]] >= 2:
                         weight[index] = 1
         
-        if min(weight) > 0:
+        if min(weight) >= 1:
             self.solutions.append(X)
             return True
         return False
