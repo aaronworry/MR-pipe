@@ -10,6 +10,7 @@ class ExhaustiveAlgorithm():
         self.found = []
         self.get_start_ids(self.robots)
         self.k = len(self.robots)
+        self.gamma = 100.
         self.graph = [list(elem) for elem in self.Graph.get_edges()]
 
     def calculate_avaliable_solution(self):
@@ -23,18 +24,20 @@ class ExhaustiveAlgorithm():
         self.calculate_avaliable_solution()
         walks = None
         minLen = sys.maxsize
-        for e in self.found:
+        u_num = 0
+        for num, e in self.found:
             lenList = []
             simple_closed_walk = []
             for walk in e:
                 len1 = len(walk) - 1
                 lenList.append(len1)
                 simple_closed_walk.append({'path': walk, 'length': len1, 'count': len(walk)})
-            tempmax = max(lenList)
+            tempmax = max(lenList) + self.gamma * num
             if tempmax < minLen:
                 walks = simple_closed_walk
                 minLen = tempmax
-        return walks
+                u_num = num
+        return u_num, walks
         
     def get_start_ids(self, robots):
         start_ids = {}
@@ -107,23 +110,29 @@ class ExhaustiveAlgorithm():
         for item in temp:
             if temp[item] != 0:
                 return False
+        unvisited_edge_num = self.checkConditions(paths)
+        self.found.append([unvisited_edge_num, paths])
+        """
         if self.checkConditions(paths):
             self.found.append(paths)
             return True
         else:
             return False
+        """
 
     def checkConditions(self, paths):
         lst = [0] * len(self.graph)
+        result = 0
         for path in paths:
             i = 0
             for edge in self.graph:
                 if self.check_added2(path, edge):
                     lst[i] = 1
                 i = i + 1
-        if 0 in lst:
-            return False
-        return True
+        for item in lst:
+            if item == 0:
+                result += 1
+        return result
 
     def check_added2(self, path, edge):    # 边是否在 路径中
         if self.sub_list_exists(path, edge):
