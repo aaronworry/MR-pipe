@@ -2,7 +2,7 @@ import time
 import sys
 import numpy as np
 # m node, n robot, T length        (m^n)^T
-sys.setrecursionlimit(10000)
+# sys.setrecursionlimit(10000)
 
 # cost so many time
 class ExhaustiveSpaceToTime():
@@ -20,6 +20,7 @@ class ExhaustiveSpaceToTime():
         self.case_num = 0
         self.solutions = []
         self.X0 = None
+        self.cache = []
         
         self.iter_X_t()
         self.A, self.robot_node_dict = self.get_adjance_matrix()
@@ -38,14 +39,16 @@ class ExhaustiveSpaceToTime():
                 j -= 1
                 flag += 1
         self.X0 = X0
-        self.iter_solution(self.case_X_t, self.X0, (self.X0, ), 1)
+        self.cache.append([self.X0])
+        # self.iter_solution(self.case_X_t, self.X0, (self.X0, ), 1)
+        self.BFS_solve()
         walks = self.trans(self.solutions[0])
-        # map1: walks = [{'path': [0, 1, 2, 3, 2, 4, 5, 3, 5, 6, 7], 'length': 10, 'count': 11}]
-        # map2: walks = [{'path': [1, 0, 8, 9, 10, 9, 13, 12, 4, 6], 'length': 9, 'count': 10}, {'path': [7, 5, 15, 14, 13, 14, 10, 11, 3, 2], 'length': 9, 'count': 10}]
-        # map3: walks = [{'path': [1, 0, 8, 9, 10, 14, 13, 12, 4, 6], 'length': 9, 'count': 10}, {'path': [2, 3, 11, 10, 9, 13, 14, 15, 5, 7], 'length': 9, 'count': 10}]
-        # map4: walks = [{'path': [0, 1, 0], 'length': 2, 'count': 3}, {'path': [8, 7, 3, 2, 1, 0], 'length': 5, 'count': 6}, {'path': [9, 5, 4, 1, 0, 1, 2, 3, 6, 5, 9], 'length': 10, 'count': 11}]
-        # map5:
-        # map6:
+        # map1: cut_walks = [{'path': [0, 1, 2, 3, 2, 4, 5, 3, 5, 6, 7], 'length': 10, 'count': 11}]
+        # map2: cut_walks = [{'path': [1, 0, 8, 9, 10, 9, 13, 12, 4, 6], 'length': 9, 'count': 10}, {'path': [7, 5, 15, 14, 13, 14, 10, 11, 3, 2], 'length': 9, 'count': 10}]
+        # map3: cut_walks = [{'path': [1, 0, 8, 9, 10, 14, 13, 12, 4, 6], 'length': 9, 'count': 10}, {'path': [2, 3, 11, 10, 9, 13, 14, 15, 5, 7], 'length': 9, 'count': 10}]
+        # map4: cut_walks = [{'path': [0, 1, 2, 3, 7, 8], 'length': 5, 'count': 6}, {'path': [8, 7, 3, 6, 5, 9], 'length': 5, 'count': 6}, {'path': [9, 5, 4, 1, 0], 'length': 4, 'count': 5}]
+        # map5: cut_walks = [{'path': [0, 1, 2, 5, 2, 6], 'length': 5, 'count': 6}, {'path': [9, 4, 1, 3, 8], 'length': 4, 'count': 5}, {'path': [7, 3, 1, 4, 10], 'length': 4, 'count': 5}]
+        # map6: cut_walks = 
         unvisited_edge_num, sum_visited_edge = self.checkResult(walks)
         
         QQ = len(self.graph) - unvisited_edge_num
@@ -121,12 +124,12 @@ class ExhaustiveSpaceToTime():
 
     
     def iter_solution(self, X_list, X0, out=(), iter_num=0):
-        # BFS method
-        if iter_num > 15:  # 30
+        # DFS method
+        if iter_num > 11:  # 15
             return
         if len(self.solutions) > 0:
             return 
-        self.checkConditions(out)
+        self.checkConditions(list(out))
         
         for item_case in X_list:
             if iter_num == 1:
@@ -138,7 +141,27 @@ class ExhaustiveSpaceToTime():
                 # satisfy that Xi -> Xi+1 is reasonable
                 if np.min(item_case <= temp[-1].dot(self.A)) == 1:
                     self.iter_solution(X_list, X0, out + (item_case, ), iter_num + 1)
-    
+
+    def BFS_solve(self):
+        while len(self.solutions) == 0:
+            X = self.cache[0]
+            for item_case in self.case_X_t:
+                if len(X) == 1:
+                    if np.max(X[0].dot(item_case.T)) < 0.9 and np.min(item_case <= X[0].dot(self.A)) == 1:
+                        temp = X.copy()
+                        temp.append(item_case)
+                        self.checkConditions(temp)
+                        self.cache.append(temp)
+                else:
+                    if np.min(item_case <= X[-1].dot(self.A)) == 1:
+                        temp = X.copy()
+                        temp.append(item_case)
+                        self.checkConditions(temp)
+                        self.cache.append(temp)
+            del self.cache[0]
+                        
+        
+   
     def cal_combination_case_k_robot(self, k, out=()):
         # cal self.case_X_t [(k, node), (k, node)]
         if k == 0:
@@ -158,8 +181,7 @@ class ExhaustiveSpaceToTime():
         
         
 
-    def checkConditions(self, x):
-        X = list(x)
+    def checkConditions(self, X):
         #  X :  [X0, X1, ..., XT]
         #  Xi:  np.shape(k, node)
         if len(X) < 2:
