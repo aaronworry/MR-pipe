@@ -48,7 +48,8 @@ class ExhaustiveSpaceToTime():
         # map3: cut_walks = [{'path': [1, 0, 8, 9, 10, 14, 13, 12, 4, 6], 'length': 9, 'count': 10}, {'path': [2, 3, 11, 10, 9, 13, 14, 15, 5, 7], 'length': 9, 'count': 10}]
         # map4: cut_walks = [{'path': [0, 1, 2, 3, 7, 8], 'length': 5, 'count': 6}, {'path': [8, 7, 3, 6, 5, 9], 'length': 5, 'count': 6}, {'path': [9, 5, 4, 1, 0], 'length': 4, 'count': 5}]
         # map5: cut_walks = [{'path': [0, 1, 2, 5, 2, 6], 'length': 5, 'count': 6}, {'path': [9, 4, 1, 3, 8], 'length': 4, 'count': 5}, {'path': [7, 3, 1, 4, 10], 'length': 4, 'count': 5}]
-        # map6: cut_walks = 
+        # map6: cut_walks = [{'path': [7, 6, 0, 1, 0, 2, 14], 'length': 6, 'count': 7}, {'path': [9, 8, 1, 0, 1, 3, 15], 'length': 6, 'count': 7}, {'path': [11, 10, 4, 2, 3, 2, 14], 'length': 6, 'count': 7}, {'path': [13, 12, 5, 4, 5, 3, 15], 'length': 6, 'count': 7}]
+        # map6: cut_walks = [{'path': [7, 6, 0, 2, 3, 15], 'length': 5, 'count': 6}, {'path': [9, 8, 1, 0, 2, 14], 'length': 5, 'count': 6}, {'path': [11, 10, 4, 5, 3, 15], 'length': 5, 'count': 6}, {'path': [13, 12, 5, 4, 2, 14], 'length': 5, 'count': 6}]
         unvisited_edge_num, sum_visited_edge = self.checkResult(walks)
         
         QQ = len(self.graph) - unvisited_edge_num
