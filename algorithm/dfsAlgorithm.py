@@ -2,7 +2,7 @@ import time
 import sys
 import numpy as np
 
-class ExhaustiveAlgorithm():
+class DFSAlgorithm():
     def __init__(self, graph, robots):
         self.robots = robots
         self.Graph = graph

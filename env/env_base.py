@@ -11,9 +11,6 @@ from elements.pipeEdge import Edge
 from view.plot import env_viewer
 from view.plot3D import env_viewer_3D
 from algorithm.weightGraph import WeightGraph
-from algorithm.exhaustiveAlgorithm import ExhaustiveAlgorithm
-from algorithm.heuristicAlgorithm import HeuristicAlgorithm
-from algorithm.exhaustiveSpaceToTime import ExhaustiveSpaceToTime
 from maps.getMap import GetMap
 
 class Env():

@@ -1,4 +1,5 @@
-from .exhaustiveAlgorithm import ExhaustiveAlgorithm
+from .bfsAlgorithm import BFSAlgorithm
 from .heuristicAlgorithm import HeuristicAlgorithm
 from .weightGraph import WeightGraph
-from .exhaustiveSpaceToTime import ExhaustiveSpaceToTime
+from .dfsAlgorithm import DFSAlgorithm
+from .bipAlgorithm import BIPAlgorithm

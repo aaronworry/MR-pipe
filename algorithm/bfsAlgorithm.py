@@ -5,7 +5,7 @@ import numpy as np
 # sys.setrecursionlimit(10000)
 
 # cost so many time
-class ExhaustiveSpaceToTime():
+class BFSAlgorithm():
     def __init__(self, graph, robots):     
         self.robots = robots
         self.Graph = graph
