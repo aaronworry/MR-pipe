@@ -8,7 +8,7 @@ end_state = np.array([[4., 0.], [0., 4.], [-4., 0.], [0., -4.]])
 all_radius = [0.2, 0.3, 0.2, 0.3]
 
 
-class Opt():
+class BIPAlgorithm():
     def __init__(self, i, dt):
         self.robot_state = start_state[i]
         self.orientation = start_state[i][2]

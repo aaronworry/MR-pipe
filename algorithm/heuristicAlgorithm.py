@@ -374,7 +374,11 @@ class HeuristicAlgorithm():
             self.found.append(list(out))
             return        
         for j in range(len(A[item_list[i]])):
-            self.global_comb(A, item_list, out + (A[item_list[i]][j][0], ), i + 1)
+            temp_co = out
+            for item in A[item_list[i]][j]:
+                temp_co = temp_co + (item, )
+            # self.global_comb(A, item_list, out + (A[item_list[i]][j][0], ), i + 1)
+            self.global_comb(A, item_list, temp_co, i + 1)
         
     def aspect_comb(self, item, A, k, out=(), i=0):
         # k <= len(A) - i
