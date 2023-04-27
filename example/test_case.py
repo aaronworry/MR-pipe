@@ -9,8 +9,7 @@ from algorithm.heuristicAlgorithm import HeuristicAlgorithm
 from algorithm.dfsAlgorithm import DFSAlgorithm
 from algorithm.bipAlgorithm import BIPAlgorithm
 
-env = Env(dt = 0.8, pipe_path="../maps/case2.yaml", dim=3)
-
+env = Env(dt = 0.8, pipe_path="../maps/case1.yaml", dim=3)
 start = time.time()
 
 # alg = DFSAlgorithm(env.graph, env.robots)
@@ -26,8 +25,10 @@ cost = time.time() - start
 print(cost, unvisited_num, repetition, walks)
 
 
+start2 = time.time()
 env.path_planning(walks)    
 while not len(env.robot_finihsed_set) == env.robot_num:
     env.step_path()
+print(time.time() - start2)
     
     

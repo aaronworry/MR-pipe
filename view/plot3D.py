@@ -34,6 +34,8 @@ class env_viewer_3D():
         self.edges = env.edges
         self.nodes = env.nodes
         
+        self.index = 0
+        
     def init_viewer(self):
         self.ax.set_xlim(self.offset_x, self.offset_x + self.width)
         self.ax.set_ylim(self.offset_y, self.offset_y + self.height)
@@ -92,6 +94,9 @@ class env_viewer_3D():
             # plt.yticks(fontproperties = myfont)
             # plt.axis('off')
             plt.savefig('../figures/result' + self.pipe_path[-6] + '.pdf',dpi=300,bbox_inches = "tight")
+        # plt.savefig('../gif/' + str(self.index) + '.jpg')
+        # plt.savefig('../gif/' + str(self.index) + '.pdf',dpi=300,bbox_inches = "tight")
+        self.index += 1
             
         
     def drawPipeEdges(self, edges):
