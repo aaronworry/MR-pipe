@@ -6,7 +6,7 @@ import numpy as np
 
 # I didn't want to bother with global variables therefore,
 # I created a class to encapsulate my algorithm.
-class HeuristicAlgorithm():
+class EBCAlgorithm():
 
     def __init__(self, graph, robots):
         self.robots = robots
@@ -203,7 +203,7 @@ class HeuristicAlgorithm():
                         self.paths[item].append(path_temp2)
         """
         for item in self.paths:
-            self.paths[item] = sorted(self.paths[item], key=itemgetter('length'), reverse=True)   # 降序
+            self.paths[item] = sorted(self.paths[item], key=itemgetter('length'), reverse=True)
         for i in self.start_ids:
             if self.start_ids[i] > len(self.paths[i]):
                 self.add_dummy_tours(i, self.start_ids[i] - len(self.paths[i]))
@@ -249,11 +249,8 @@ class HeuristicAlgorithm():
         R_id, maxL, totalL = None, sys.maxsize, sys.maxsize
         for index, path_comb in enumerate(self.found):
             edge_assigned_list = self.assign_edges(path_comb)
-            # 统计未经过的edge，将edge分配给这些组合，edge离哪条路径最近，就分配给哪条, 并由小到大排序
+            # add unvisited edges to paths
             self.update_paths(path_comb, edge_assigned_list)
-            # 对于每个路径，按被分配edge离路径的距离从小到大的顺序添加edge到该路径中，添加一个edge, 则更新一次路径
-            
-            # 对于每条路径，记录里面的重复的子路径，找到最短的子路径进行替换
         # print("++++", self.update_found)
         for index, path_list in enumerate(self.update_found):
             total_length, max_length = 0, 0
@@ -261,11 +258,11 @@ class HeuristicAlgorithm():
                 total_length += path['length']
                 if max_length <= path['length']:
                     max_length = path['length']
-            # 计算路径总长度以及最大路径长度
+            # max length of path and total length
             if max_length <= maxL:
                 maxL = max_length
                 R_id = index
-            # 选最大的长度最小的
+            # the min of the max length
         # print(self.update_found[R_id])
         return self.update_found[R_id]
 
@@ -276,7 +273,7 @@ class HeuristicAlgorithm():
         for i, value in enumerate(path_comb):
             initial_path = value['path'].copy()
             for edge in edge_assigned_list[i]:   # {}
-                # edge['edge'] = [a, b]        edge['edge_id'] = a 或 b      edge['id'] = q
+                # edge['edge'] = [a, b]        edge['edge_id'] = a or b      edge['id'] = q
                 dist_temp, edge_temp, id_temp = self.cal_edge_path_distance(initial_path, edge['edge'])
                 insert_path = self.Graph.graph.get_shortest_paths(id_temp, to=edge_temp, weights=self.Graph.graph.es["weight"], output="vpath",)[0]
                 path_temp2 = insert_path.copy()
@@ -303,7 +300,7 @@ class HeuristicAlgorithm():
     def assign_edges(self, path_comb):
         # [{}, {}, {}]
         edge_dict = {}
-        unreached_edge = []    # 未经过的边
+        unreached_edge = []    # edge not passed
         for item in path_comb:
             path = item['path']
             for i in range(len(path)-1):

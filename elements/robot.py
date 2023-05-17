@@ -27,7 +27,7 @@ class Robot():
         self.conflict_resolution_forward_flag = False
         self.prior_robots = set()
         self.collision_path_id = None
-        self.hold_position_id = None   # 机器人是否站在避障点上
+        self.hold_position_id = None   # whether stand at the node (re-planning target node)
 
         self.color = None
         self.allocated = False
@@ -203,8 +203,7 @@ class Robot():
                 for robot in neighbor_cache:
                     self.judge_collision_update_prior(robot)
                 if self.conflict_resolution_flag:
-                    """写在哪儿比较好？"""
-                    # 更新 self.path_for_obstacle_avoidance, 改变方向
+                    # update self.path_for_obstacle_avoidance, reverse the order
                     temp = self.path_passed.copy()
                     temp.reverse()
                     for item in temp:
@@ -216,13 +215,13 @@ class Robot():
                     
     
     def judge_collision_update_prior(self, robot):
-        # 查看自己是否在其他机器人的prior中，如果在则跳过
-        # 如果不在，判断自己是否需要参与避障
+        # check whether other robot should avoid me, if true: break
+        # if false, check whether I meet a conflict 
         if self not in robot.prior_robots:
-            # 判断是否需要主动避开别人：  别人是否在避障
+            # the other is not free robot
             if robot.conflict_resolution_forward_flag or robot.conflict_resolution_flag:
-                if self.path[0] == robot.collision_path_id:  # 自己的下一个点和参与避障的机器人的目标相同
-                    # 向前移动避障
+                if self.path[0] == robot.collision_path_id:  # my next node == re-planning target node of the other robot
+                    # move forward to resolve conflict
                     self.collision_path_id = robot.collision_path_id
                     if robot.hold_position_id:
                         robot.prior_robots.add(self)
@@ -232,17 +231,16 @@ class Robot():
                     else:
                         robot.prior_robots.add(self)
                 elif robot.collision_path_id in self.path_passed:
-                    # 向后移动避障
+                    # move back to resolve conflict
                     self.collision_path_id = robot.collision_path_id
                     self.conflict_resolution_flag = True
                     self.prior_robots.add(robot)
                 else:
-                    # 目前不需要避障
                     print(2)
             else:
-                # 对方也是自由机器人, 需要更改对方
-                # 如果需要主动避开别人，将对方加入到自己的prior中，得到避障点的path_id                
-                # 在同一个管道中：
+                # the other is free robot 
+                # I avoid，add the other to my prior，generate path_id of replanning target node
+                # In the same pipe：
                 if self.edge == robot.edge:
                     if self.orientation == robot.orientation:
                         print(3)
@@ -262,11 +260,11 @@ class Robot():
                         else:
                             print(4)
                 else:
-                    # 两个机器人对在一起
+                    # two robots come together in different orientation
                     if self.path[0] == robot.path[0]:
-                        # 节点的入度为 2 时：
+                        # degree is 2
                         if self.path[0] not in self.env.graph.degree134:
-                            # 都需要到对方的后面去
+                            # I need to move to the last node of the other robot, the other also need to move to the last node of mine
                             if np.array_equal(self.env.graph.get_position_of_node(self.path[1]), robot.last_vertice.position) and np.array_equal(self.env.graph.get_position_of_node(robot.path[1]), self.last_vertice.position):
                                 if len(self.path) <= len(robot.path):
                                     self.conflict_resolution_flag = True
@@ -282,20 +280,20 @@ class Robot():
                                     robot.collision_path_id = self.collision_path_id    
                                 else:
                                     print(5)
-                            # 我需要去
+                            # I need to move to the last node of the other robot
                             elif np.array_equal(self.env.graph.get_position_of_node(self.path[1]), robot.last_vertice.position):
                                 if self.distance_next_vertice <= robot.distance_next_vertice:
                                     self.conflict_resolution_forward_flag = True
                                     self.prior_robots.add(robot)
                                     self.collision_path_id = self.path[0]
                                     robot.collision_path_id = self.collision_path_id                            
-                        # 度为 3 4 时
+                        # degree of node is 3 or 4
                         else:
                             if np.array_equal(self.env.graph.get_position_of_node(self.path[1]), self.last_vertice.position):
-                                # 自己需要回退
+                                # I need to move back
                                 print(6)
                             elif self.distance_next_vertice <= robot.distance_next_vertice and np.array_equal(self.env.graph.get_position_of_node(self.path[1]), robot.last_vertice.position):
-                                # 我比对方更近，且我需要到对方的上一个节点
+                                # I am the closer one, and I need to move to the last node of the other robot
                                 self.conflict_resolution_forward_flag = True
                                 self.prior_robots.add(robot)
                                 self.collision_path_id = self.path[0]
@@ -304,18 +302,18 @@ class Robot():
                                 print(7)
                             """
                             elif self.path[1] == robot.path[1]:
-                                # 目的地相同
+                                # next node are the same
                                 if np.array_equal(self.env.graph.get_position_of_node(robot.path[1]), robot.last_vertice.position) and self.distance_next_vertice <= robot.distance_next_vertice:
-                                    # 我比它近，对方需要返回
+                                    # I am closer, the other need to move back
                                     self.conflict_resolution_forward_flag = True
                                     self.prior_robots.add(robot)
                                     self.collision_path_id = self.path[0]
                                     robot.collision_path_id = self.collision_path_id
                                 else:
-                                    # 对方不需要回退, 我比他远
+                                    # The other dose not need to move back, and I am farther than the other
                                     print(7) 
                             elif self.distance_next_vertice <= robot.distance_next_vertice and np.array_equal(self.env.graph.get_position_of_node(self.path[1]), robot.last_vertice.position):
-                                # 我比对方更近，且我需要到对方的后面去
+                                # I am the closer one, and I need to move to the back of the other robot
                                 self.conflict_resolution_forward_flag = True
                                 self.prior_robots.add(robot)
                                 self.collision_path_id = self.path[0]
@@ -361,7 +359,7 @@ class Robot():
         if self.afterDis >= 0:         
             self.turn(self.afterDis, self.nextOri)
         elif self.backDis <= 0:
-            self.turnBack(self.afterDis, self.backOri) # 后退转向
+            self.turnBack(self.afterDis, self.backOri) # turn when velocity is in the opposite direction of orientation 
         else:
             position = self.position.copy()
             self.position = self.update_position(position, velocity * self.env.dt, self.orientation)
@@ -449,7 +447,7 @@ class Robot():
         return False
     
     def cal_orientation(self, pos1, pos2):
-        # pos2 相对于 pos1 的方向
+        # the orientation of pos2 related to pos1
         temp = pos2 - pos1
         if np.linalg.norm(temp) == 0.:
             return [0, 0, 0, 0, 0, 0]

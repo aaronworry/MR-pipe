@@ -58,11 +58,11 @@ class Env():
         self.plot.show(True)
     
     def _create_pipe_scenario(self):
-        # 初始化节点对象
+        # node init
         for vertice_ar in self.vertices:
             node = Vertice(self, np.asarray(vertice_ar))
             self.nodes.append(node)
-        # 初始化管道
+        # pipe init
         for edge_ar in self.Pipe:
             temp1 = np.asarray(edge_ar[0])
             temp2 = np.asarray(edge_ar[1])
@@ -77,48 +77,23 @@ class Env():
                     self.edges.append(edge)
                     self.all_edges.add(edge)
                     break
-        # 可视化界面加载
+        # viewer
         self.plot.init_viewer()
     
-    """
-    def _create_pipe_scenario(self):
-        # 初始化节点对象
-        for vertice_ar in self.vertices:
-            for item in vertice_ar:
-                node = Vertice(self, item)
-                self.nodes.append(node)
-        # 初始化管道
-        for edge_ar in self.Pipe:
-            for item in edge_ar:   #(2, 3)
-                temp1 = item[0]
-                temp2 = item[1]
-                flag1, flag2 = None, None
-                for node in self.nodes:
-                    if np.array_equal(node.position, temp1):
-                        flag1 = node
-                    elif np.array_equal(node.position, temp2):
-                        flag2 = node
-                    if flag1 is not None and flag2 is not None:
-                        edge = Edge(flag1, flag2)
-                        self.edges.append(edge)
-                        self.all_edges.add(edge)
-                        break
-        # 可视化界面加载
-        self.plot.init_viewer()
-    """
+
         
     def _create_robots(self):
-        # 初始化机器人
+        # robots init
         for i in range(self.robot_num):
             robot = Robot(self, i, np.asarray(self.ROBOTS[i]), self.ROBOTS_ORI[i])
             robot.color = self.color[(i+1)%len(self.color)]
             self.robots.append(robot)  
-        # 可视化机器人
+        # robots visualization
         self.plot.drawRobots(self.robots)
         # self.plot.show()
 
     def path_planning(self, paths):
-        # task_allocation   为机器人分配路径, 并更新颜色
+        # path allocation and color update
         for path in paths:
             true_path = path['path']
             start_position = self.graph.get_position_of_node(true_path[0])
@@ -132,7 +107,7 @@ class Env():
         self.render()
     
     def upgrade_edges(self, edges, color):
-        # 为规划的路径标注颜色
+        # color labeled
         for item in edges:
             for k in self.edges:
                 if np.array_equal(k.v1.position, item[0]) and np.array_equal(k.v2.position, item[1]):
@@ -151,7 +126,7 @@ class Env():
         
     def step_path(self):
         for robot in self.robots:
-            # env 负责 prior 的减少，robot的path不包括 path_id时 且 prior 为空时， robot 告知env ，让env删掉其它机器人的prior的自己
+            # update the prior list
             robot.prior_robots -= self.collision_finished_robots
         self.collision_finished_robots = set()
         for robot in self.robots:
@@ -193,21 +168,4 @@ class Env():
         self.plot.show()
         self.plot.pause(self.dt)
         self.time += self.dt
-    
-    """
-    def save_fig(self, path, i):
-        self.plot.save_gif_figure(path, i)
-    
-    def save_ani(self, image_path, ani_path, ani_name='animated', **kwargs):
-        self.plot.create_animate(image_path, ani_path, ani_name=ani_name, **kwargs)
-
-    def show(self, **kwargs):
-        self.plot.draw_dyna_components(**kwargs)
-        self.plot.show()
-    
-    def show_ani(self):
-        self.plot.show_ani()
-    """
-        
-
     

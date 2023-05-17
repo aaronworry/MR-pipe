@@ -7,7 +7,7 @@ class WeightGraph():
         self.graph = None
         self.__r_edges = []
         self.__is1degree = False
-        self.degree1 = []     # 度为1的顶点
+        self.degree1 = []     # node with degree = 1
         self.degree2 = []
         self.degree34 = []
         self.degree134 = []
@@ -160,7 +160,7 @@ class WeightGraph():
         return [left_flag, right_flag], temp, length
         
     
-    def get_adj(self, node, graf):    #邻接节点
+    def get_adj(self, node, graf):    #adjacent node
         new_edges = []
         for edge in graf:
             if node in edge:

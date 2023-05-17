@@ -5,19 +5,22 @@ sys.path.append("..")
 from env.env_base import Env
 import numpy as np
 from algorithm.bfsAlgorithm import BFSAlgorithm
-from algorithm.heuristicAlgorithm import HeuristicAlgorithm
+from algorithm.ebcAlgorithm import EBCAlgorithm
 from algorithm.dfsAlgorithm import DFSAlgorithm
 from algorithm.bipAlgorithm import BIPAlgorithm
 
-env = Env(dt = 0.8, pipe_path="../maps/case1.yaml", dim=3)
+env = Env(dt = 0.8, pipe_path="../maps/case5.yaml", dim=3)
 start = time.time()
 
+# DFS-based
 # alg = DFSAlgorithm(env.graph, env.robots)
 # unvisited_num, repetition, walks = alg.find_optimize_solution()
 
-alg = HeuristicAlgorithm(env.graph, env.robots)
+#EBC
+alg = EBCAlgorithm(env.graph, env.robots)
 unvisited_num, repetition, walks = alg.my_algorithm()
 
+# BFS-based
 # alg = BFSAlgorithm(env.graph, env.robots)
 # unvisited_num, repetition, walks = alg.solve()
 
