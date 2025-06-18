@@ -24,7 +24,8 @@ class env_viewer_3D():
         self.pipe_path = env.pipe_path
 
         self.fig = plt.figure()
-        self.ax = self.fig.gca(projection='3d')
+        # self.ax = self.fig.gca(projection='3d')
+        self.ax = self.fig.add_axes(Axes3D(self.fig))
         
         self.color_list = ['g', 'b', 'r', 'c', 'm', 'y', 'k', 'w']
         self.robot_plot_list = []

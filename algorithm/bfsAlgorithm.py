@@ -4,7 +4,7 @@ import numpy as np
 # m node, n robot, T length        (m^n)^T
 # sys.setrecursionlimit(10000)
 
-# cost so many time
+# cost much time
 class BFSAlgorithm():
     def __init__(self, graph, robots):     
         self.robots = robots

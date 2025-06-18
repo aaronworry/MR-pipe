@@ -55,7 +55,8 @@ class Env():
         self._create_robots()
         
         self.graph = WeightGraph(self.vertices, self.Pipe)
-        self.plot.show(True)
+        # self.plot.show(True)
+        self.plot.show()
     
     def _create_pipe_scenario(self):
         # node init

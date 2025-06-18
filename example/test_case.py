@@ -16,7 +16,7 @@ start = time.time()
 # alg = DFSAlgorithm(env.graph, env.robots)
 # unvisited_num, repetition, walks = alg.find_optimize_solution()
 
-#EBC
+# EBC
 alg = EBCAlgorithm(env.graph, env.robots)
 unvisited_num, repetition, walks = alg.my_algorithm()
 
@@ -24,14 +24,16 @@ unvisited_num, repetition, walks = alg.my_algorithm()
 # alg = BFSAlgorithm(env.graph, env.robots)
 # unvisited_num, repetition, walks = alg.solve()
 
+# BIP
+# alg = BIPAlgorithm(env.graph, env.robots)
+# unvisited_num, repetition, walks = alg.solve()
+
 cost = time.time() - start
 print(cost, unvisited_num, repetition, walks)
 
 
 start2 = time.time()
-env.path_planning(walks)    
+env.path_planning(walks)
 while not len(env.robot_finihsed_set) == env.robot_num:
     env.step_path()
 print(time.time() - start2)
-    
-    
