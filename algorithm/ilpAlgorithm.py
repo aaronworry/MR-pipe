@@ -5,7 +5,7 @@ import timeit
 import gurobipy as gp
 from gurobipy import GRB
 
-class BIPAlgorithm():
+class ILPAlgorithm():
     def __init__(self, graph, robots):
         self.T_max = 16
         self.robots = robots

@@ -7,7 +7,7 @@ import numpy as np
 from algorithm.bfsAlgorithm import BFSAlgorithm
 from algorithm.ebcAlgorithm import EBCAlgorithm
 from algorithm.dfsAlgorithm import DFSAlgorithm
-from algorithm.bipAlgorithm import BIPAlgorithm
+from algorithm.ilpAlgorithm import ILPAlgorithm
 
 env = Env(dt = 0.8, pipe_path="../maps/case5.yaml", dim=3)
 start = time.time()
