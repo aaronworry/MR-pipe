@@ -9,7 +9,7 @@ from algorithm.ebcAlgorithm import EBCAlgorithm
 from algorithm.dfsAlgorithm import DFSAlgorithm
 from algorithm.ilpAlgorithm import ILPAlgorithm
 
-env = Env(dt = 0.8, pipe_path="../maps/case5.yaml", dim=3)
+env = Env(dt = 0.8, pipe_path="../maps/case2.yaml", dim=3)
 start = time.time()
 
 # DFS-based
@@ -24,8 +24,8 @@ unvisited_num, repetition, walks = alg.my_algorithm()
 # alg = BFSAlgorithm(env.graph, env.robots)
 # unvisited_num, repetition, walks = alg.solve()
 
-# BIP
-# alg = BIPAlgorithm(env.graph, env.robots)
+# ILP
+# alg = ILPAlgorithm(env.graph, env.robots)
 # unvisited_num, repetition, walks = alg.solve()
 
 cost = time.time() - start
