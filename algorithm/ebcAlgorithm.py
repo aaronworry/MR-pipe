@@ -301,6 +301,7 @@ class EBCAlgorithm():
         # [{}, {}, {}]
         edge_dict = {}
         unreached_edge = []    # edge not passed
+        temp_path_length = [0] * len(path_comb)
         for item in path_comb:
             path = item['path']
             for i in range(len(path)-1):
@@ -324,10 +325,11 @@ class EBCAlgorithm():
             assign_id = sys.maxsize
             for i, value in enumerate(path_comb):
                 dist_temp, edge_temp, id_temp = self.cal_edge_path_distance(value.get('path'), edge)
-                if dist_temp < distance:
-                    distance, edge_flag, id_flag = dist_temp, edge_temp, id_temp
+                if 2 + 2 * dist_temp + temp_path_length[i] < distance:
+                    distance, edge_flag, id_flag = 2 + 2 * dist_temp + temp_path_length[i], edge_temp, id_temp
                     assign_id = i
             assign_edges_list[assign_id].append({'edge':edge, 'dis':distance, 'edge_id':edge_flag, 'id':id_flag})
+            temp_path_length[assign_id] += 2 + 2 * dist_temp
         for i in range(len(assign_edges_list)):
             assign_edges_list[i] = sorted(assign_edges_list[i], key=itemgetter('dis'))
         return assign_edges_list
