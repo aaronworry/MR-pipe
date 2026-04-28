@@ -8,8 +8,9 @@ from algorithm.bfsAlgorithm import BFSAlgorithm
 from algorithm.ebcAlgorithm import EBCAlgorithm
 from algorithm.dfsAlgorithm import DFSAlgorithm
 from algorithm.ilpAlgorithm import ILPAlgorithm
+from algorithm.kCPPAlgorithm import KCPPAlgorithm
 
-env = Env(dt = 0.8, pipe_path="../maps/case2.yaml", dim=3)
+env = Env(dt = 0.8, pipe_path="../maps/case30v_6r_3layer.yaml", dim=3)
 start = time.time()
 
 # DFS-based
@@ -26,6 +27,10 @@ unvisited_num, repetition, walks = alg.my_algorithm()
 
 # ILP
 # alg = ILPAlgorithm(env.graph, env.robots)
+# unvisited_num, repetition, walks = alg.solve()
+
+# KCPP
+# alg = KCPPAlgorithm(env.graph, env.robots)
 # unvisited_num, repetition, walks = alg.solve()
 
 cost = time.time() - start
